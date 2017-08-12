@@ -1,4 +1,4 @@
-# uglytable
+# ug
 
 > A Vue.js project
 

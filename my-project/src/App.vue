@@ -1,13 +1,18 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <router-view></router-view>
+    <vue-canvas id="canva" :width="600" :height="400"></vue-canvas>
+
   </div>
 </template>
 
 <script>
+import vueCanvas from './canvas/vueCanvas'
+
 export default {
-  name: 'app'
+  name: 'app',
+  components: {
+    'vue-canvas': vueCanvas
+  }
 }
 </script>
 
