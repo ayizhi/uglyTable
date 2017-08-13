@@ -1,5 +1,10 @@
 <template>
-    <canvas :id='id' :width="width" :height="height" style="border: 1px solid"></canvas>
+    <canvas :id='id' :width="width" :height="height" :style="{
+        border: '1px solid #000',
+        width: width + 'px',
+        height: height + 'px',
+
+    }"></canvas>
 </template>
 <script>
 import Data from './data';
@@ -123,8 +128,28 @@ class AcrossLine{
                 default: () => {
                     return 43
                 }
-            }
+            },
+
+            fontSize: {
+                type: Number,
+                default: () => {
+                    return 14
+                }
+            },
+
+            textAglin: {
+                type: String,
+                default: () => {
+                    return 'left'//start, end, left, right or center
+                }
+            },
             
+            padding: {
+                type: Number,
+                default: () => {
+                    return 10
+                }
+            },
         },
 
         data(){
@@ -158,14 +183,46 @@ class AcrossLine{
 
             t.canvas = document.getElementById(t.id);
             t.ctx = t.canvas.getContext('2d');
+            t.canvas.width = t.ratio * t.width;
+            t.canvas.height = t.ratio * t.height;
+
+            //表头index
+            t.dataHeaders.unshift({
+                field: 'table_index',
+                fieldName: '',
+            })
 
              //处理后的数据
-            let headerLen = t.dataHeaders.length
+            let headerLen = t.dataHeaders.length;
+           
+            //表头
             t.dataHeaders.map((header,index) => {
                 let field = header.field;
                 let fieldName = header.fieldName;
+                if(field == 'table_index' && fieldName == ''){
+                    let paneWidth =  50 * 2;
+                    t.fixedData[field] = {
+                        fieldName: '',
+                        startY: t.startY,
+                        startX: t.startX,
+                        index: index,
+                        headerLen: headerLen,
+                        paneWidth: paneWidth * t.ratio,
+                        paneHeight: t.headerPaneHeight * t.ratio,
+                        headerCanvas: t.drawPane({
+                            type: 'header',
+                            index: index,
+                            headerLen: headerLen,
+                            paneWidth: paneWidth ,
+                            paneHeight: t.headerPaneHeight ,
+                            info: fieldName
+                        })
+                    };
+                    t.startX += paneWidth;                
+                    return;        
+                }
+
                 let paneWidth = fieldName.length * 50;
-                
                 let dataType = header.dataType;
                 let isFixed = header.isFixed
                 t.fixedData[field] = {
@@ -174,18 +231,18 @@ class AcrossLine{
                     startX: t.startX,
                     index: index,
                     headerLen: headerLen,
-                    paneWidth: paneWidth,
+                    paneWidth: paneWidth * t.ratio,
+                    paneHeight: t.headerPaneHeight * t.ratio,
                     headerCanvas: t.drawPane({
+                        type: 'header',
                         index: index,
                         headerLen: headerLen,
-                        paneWidth: paneWidth,
-                        paneHeight: t.headerPaneHeight,
+                        paneWidth: paneWidth ,
+                        paneHeight: t.headerPaneHeight ,
                         info: fieldName
                     })
                 };
-
-                t.startX += paneWidth;
-                
+                t.startX += paneWidth;  
             })
             
             t.run()
@@ -199,29 +256,31 @@ class AcrossLine{
                 const t = this;
                 let canvas = document.createElement('canvas');
                 let ctx = canvas.getContext('2d');
-                
+                let info = obj.info;
                 let tWidth = obj.paneWidth * t.ratio;
                 let tHeight = obj.paneHeight * t.ratio;
                 canvas.width = tWidth;
                 canvas.height = tHeight;
-                //bg
-                if(obj.index != 0){
-                    
+
+
+
+                if(obj.info == ''){
+
                 }
-                // ctx.drawImage(t.acrossLine,0,0,tWidth,1)
                 ctx.drawImage(t.acrossLine,
                     0,
                     tHeight - 1,
                     tWidth,
                     1)
                 if(obj.index != 0){
+
                     ctx.drawImage(t.verticalLine,
                         0,
                         0,
                         1,
                         tHeight)
                 }
-                if(obj.index == obj.headerLen - 1){
+                if(obj.index == obj.headerLen - 1){                    
                     ctx.drawImage(t.verticalLine,
                         tWidth,
                         0,
@@ -229,9 +288,23 @@ class AcrossLine{
                         tHeight)
                 }
 
-
-                return canvas
+                //text default color
+                ctx.font = t.fontSize * t.ratio + 'px Arif';
+                if(obj.type == 'header'){
+                    ctx.fillStyle = '#9e9ea6';
+                }else{
+                    ctx.fillStyle = '#555459';
+                }
                 
+                ctx.textAlign = t.textAglin;    //start, end, left, right or center
+                ctx.textBaseline = 'middle';
+                if(t.textAglin == 'center'){
+                    ctx.fillText(obj.info,tWidth/2,tHeight/2)
+                }else if(t.textAglin == 'left'){
+                    ctx.fillText(obj.info,t.padding,tHeight/2)
+                }
+
+                return canvas  
             },
 
 
@@ -244,9 +317,8 @@ class AcrossLine{
                     let x = pane.startX;
                     let y = pane.startY;
                     let w = pane.paneWidth;
-                    let hh = t.headerPaneHeight;//header height
-                    let bh = t.bodyPaneHeight;//body height
-                    t.ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,hh)
+                    let h = pane.paneHeight;
+                    t.ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h)
                 })
 
             },
@@ -254,6 +326,7 @@ class AcrossLine{
             run(){
                 const t = this;
                 const _run = () => {
+                    t.ctx.clearRect(0,0,t.canvas.width,t.canvas.height)
                     t.render()
                     requestAnimationFrame(_run)
                 }
