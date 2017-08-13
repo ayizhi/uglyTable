@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <vue-canvas id="canva" :width="800" :height="600"></vue-canvas>
+    <vue-canvas id="canva" :width="800" :height="600" :fixed="2"></vue-canvas>
   </div>
 </template>
 
