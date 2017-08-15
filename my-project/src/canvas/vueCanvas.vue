@@ -190,10 +190,11 @@ class AcrossLine{
             t.canvas.height = t.ratio * t.height;
 
             //处理数据
-            t.dealData();
+            let maxWidth = t.dealData();
 
-            //画header
-            t.headerCanvas = t.drawRow();
+            //画header（canvas 最大宽度是32767px）所以需要切分
+            t.headerCanvasList = t.drawRow(maxWidth);
+
 
             t.run();
         },
@@ -239,7 +240,7 @@ class AcrossLine{
                                 info: fieldName
                             })
                         };
-                        selfStartX += paneWidth;                
+                        selfStartX += paneWidth * t.ratio;                            
                         return;        
                     }
 
@@ -264,8 +265,10 @@ class AcrossLine{
                             info: fieldName
                         })
                     };
-                    selfStartX += paneWidth;  
+                    selfStartX += paneWidth * t.ratio;  
                 })
+
+                return selfStartX;
             },
 
             //绘制每个单元格
@@ -320,39 +323,72 @@ class AcrossLine{
             },
 
             //画每行
-            drawRow(){
+            drawRow(maxWidth){
                 const t = this;
-                let canvas = document.createElement('canvas');
-                let ctx = canvas.getContext('2d');
 
-                canvas.width = 10000;
-                canvas.height = 100;
-            ctx.font = 48 + 'px Arif';
-            ctx.textAlign = t.textAglin;    //start, end, left, right or center
-            ctx.textBaseline = 'middle';
-            ctx.fillText('lalalalasdkasdhakjs',10,24)
+                let rowCanvasList = [];
+                //google 浏览器canvas的最大宽度为32766px
+                let splitLen = 30000                
+                //所以我们需要的最小canvas数为
+                let minCanNum = parseInt(maxWidth / splitLen) + 1;
+                let i;
+                //区分group
+                for(i = 0 ; i < minCanNum ; i ++){
+                    rowCanvasList[0] = {
+                        canvas: document.createElement('canvas'),
+                        start: i * splitLen,
+                        end: (i+1) * splitLen
+                    }
+                }
 
 
-                let totalWidth = 0;
-                let totalheight = 0;
                 Object.keys(t.fixedData).map((key,index) => {
-                    if(index  > 2){return}
                     let pane = t.fixedData[key];
                     let hc = pane.headerPaneCanvas;
                     let x = pane.startX;
                     let y = pane.startY;
                     let w = pane.paneWidth;
                     let h = pane.paneHeight;
-                    console.log(0,0,hc.width,hc.height,x,y,w,h)
+                    //属于哪个group
+                    let i = parseInt((pane.startX + pane.paneWidth) / splitLen) + 1;
+                    let canvas = rowCanvasList[i].canvas;
+                    let ctx = canvas.getContext('2d')
                     ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
-                    totalWidth += w;
-                    if(index == 0) totalheight = h;
+                })
+
+
+             
+                //split into 10 groups 
+                //first9 group
+            
+                // canvas.width = maxWidth;
+                // canvas.height = t.fixedData['table_index'].paneHeight;
+
+                
+
+              
+
+                ctx.font = 48 + 'px Arif';
+                ctx.textAlign = t.textAglin;    //start, end, left, right or center
+                ctx.textBaseline = 'middle';
+                ctx.fillText('lalalalasdkasdhakjs',10,24)
+
+
+
+                Object.keys(t.fixedData).map((key,index) => {
+                    let pane = t.fixedData[key];
+                    let hc = pane.headerPaneCanvas;
+                    let x = pane.startX;
+                    let y = pane.startY;
+                    let w = pane.paneWidth;
+                    let h = pane.paneHeight;
+                    ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
                 })
 
 
 
-                // canvas.width = totalWidth;
-                // canvas.height = totalheight;
+
+
 
                 console.log(canvas.width,canvas.height)
 
@@ -364,21 +400,9 @@ class AcrossLine{
             render(){
                 const t = this;
 
-                // Object.keys(t.fixedData).map((key,index) => {
-                //     let pane = t.fixedData[key];
-                //     let hc = pane.headerPaneCanvas;
-                //     let x = pane.startX;
-                //     let y = pane.startY;
-                //     let w = pane.paneWidth;
-                //     let h = pane.paneHeight;
-                //     t.ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
-
-                // })
-              
-                t.ctx.drawImage(t.headerCanvas,
-                0,
-                0,
-                100,100)
+                // t.ctx.drawImage(t.headerCanvas,
+                // // 0,0,t.headerCanvas.width,t.headerCanvas.height,
+                // t.startX,0,
                 // t.headerCanvas.width,
                 // t.headerCanvas.height);
               
