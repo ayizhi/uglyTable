@@ -172,6 +172,9 @@ class AcrossLine{
                 acrossLine: new AcrossLine({width: 100}).canvas,
                 verticalLine: new VerticalLine({height: 100}).canvas,
 
+                //headercanvas
+                headerCanvas: null,//表头canvas，临时，会在之后把整张表画成一张图
+
                 
                 startX: 0,
                 startY: 0,
@@ -186,100 +189,109 @@ class AcrossLine{
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
 
-            //表头index
-            t.dataHeaders.unshift({
-                field: 'table_index',
-                fieldName: '',
-            })
+            //处理数据
+            t.dealData();
 
-             //处理后的数据
-            let headerLen = t.dataHeaders.length;
-           
-            //表头
-            t.dataHeaders.map((header,index) => {
-                let field = header.field;
-                let fieldName = header.fieldName;
-                if(field == 'table_index' && fieldName == ''){
-                    let paneWidth =  50 * 2;
-                    t.fixedData[field] = {
-                        fieldName: '',
-                        startY: t.startY,
-                        startX: t.startX,
-                        index: index,
-                        headerLen: headerLen,
-                        paneWidth: paneWidth * t.ratio,
-                        paneHeight: t.headerPaneHeight * t.ratio,
-                        headerCanvas: t.drawPane({
-                            type: 'header',
-                            index: index,
-                            headerLen: headerLen,
-                            paneWidth: paneWidth ,
-                            paneHeight: t.headerPaneHeight ,
-                            info: fieldName
-                        })
-                    };
-                    t.startX += paneWidth;                
-                    return;        
-                }
+            //画header
+            t.headerCanvas = t.drawRow();
 
-                let paneWidth = fieldName.length * 50;
-                let dataType = header.dataType;
-                let isFixed = header.isFixed
-                t.fixedData[field] = {
-                    fieldName: fieldName,
-                    startY: t.startY,
-                    startX: t.startX,
-                    index: index,
-                    headerLen: headerLen,
-                    paneWidth: paneWidth * t.ratio,
-                    paneHeight: t.headerPaneHeight * t.ratio,
-                    headerCanvas: t.drawPane({
-                        type: 'header',
-                        index: index,
-                        headerLen: headerLen,
-                        paneWidth: paneWidth ,
-                        paneHeight: t.headerPaneHeight ,
-                        info: fieldName
-                    })
-                };
-                t.startX += paneWidth;  
-            })
-            
-            t.run()
+            t.run();
         },
 
         computed: {},
 
         methods: {
+            dealData(){
+                const t = this;
+
+                //表头index
+                t.dataHeaders.unshift({
+                    field: 'table_index',
+                    fieldName: '',
+                })
+
+                //处理后的数据
+                let headerLen = t.dataHeaders.length;
+                let selfStartX = 0;
+                let selfStartY = 0;
+            
+                //表头
+                t.dataHeaders.map((header,index) => {
+                    let field = header.field;
+                    let fieldName = header.fieldName;
+                    //开头的空格
+                    if(field == 'table_index' && fieldName == ''){
+                        let paneWidth =  50 * 2;
+                        t.fixedData[field] = {
+                            fieldName: '',
+                            startY: selfStartY,
+                            startX: selfStartX,
+                            index: index,
+                            headerLen: headerLen,
+                            paneWidth: paneWidth * t.ratio,
+                            paneHeight: t.headerPaneHeight * t.ratio,
+                            headerPaneCanvas: t.drawPane({
+                                type: 'header',
+                                index: index,
+                                headerLen: headerLen,
+                                paneWidth: paneWidth * t.ratio,
+                                paneHeight: t.headerPaneHeight * t.ratio ,
+                                info: fieldName
+                            })
+                        };
+                        selfStartX += paneWidth;                
+                        return;        
+                    }
+
+                    //表头
+                    let paneWidth = fieldName.length * 50;
+                    let dataType = header.dataType;
+                    let isFixed = header.isFixed
+                    t.fixedData[field] = {
+                        fieldName: fieldName,
+                        startY: selfStartY,
+                        startX: selfStartX,
+                        index: index,
+                        headerLen: headerLen,
+                        paneWidth: paneWidth * t.ratio ,
+                        paneHeight: t.headerPaneHeight * t.ratio,
+                        headerPaneCanvas: t.drawPane({
+                            type: 'header',
+                            index: index,
+                            headerLen: headerLen,
+                            paneWidth: paneWidth * t.ratio ,
+                            paneHeight: t.headerPaneHeight * t.ratio,
+                            info: fieldName
+                        })
+                    };
+                    selfStartX += paneWidth;  
+                })
+            },
+
             //绘制每个单元格
             drawPane(obj){
                 const t = this;
                 let canvas = document.createElement('canvas');
                 let ctx = canvas.getContext('2d');
                 let info = obj.info;
-                let tWidth = obj.paneWidth * t.ratio;
-                let tHeight = obj.paneHeight * t.ratio;
+                let tWidth = obj.paneWidth;
+                let tHeight = obj.paneHeight;
                 canvas.width = tWidth;
                 canvas.height = tHeight;
 
-
-
-                if(obj.info == ''){
-
-                }
                 ctx.drawImage(t.acrossLine,
                     0,
                     tHeight - 1,
                     tWidth,
-                    1)
+                    1);
+                
                 if(obj.index != 0){
-
                     ctx.drawImage(t.verticalLine,
                         0,
                         0,
                         1,
                         tHeight)
-                }
+                };
                 if(obj.index == obj.headerLen - 1){                    
                     ctx.drawImage(t.verticalLine,
                         tWidth,
@@ -307,19 +319,69 @@ class AcrossLine{
                 return canvas  
             },
 
-
-            render(){
+            //画每行
+            drawRow(){
                 const t = this;
+                let canvas = document.createElement('canvas');
+                let ctx = canvas.getContext('2d');
 
+                canvas.width = 10000;
+                canvas.height = 100;
+            ctx.font = 48 + 'px Arif';
+            ctx.textAlign = t.textAglin;    //start, end, left, right or center
+            ctx.textBaseline = 'middle';
+            ctx.fillText('lalalalasdkasdhakjs',10,24)
+
+
+                let totalWidth = 0;
+                let totalheight = 0;
                 Object.keys(t.fixedData).map((key,index) => {
+                    if(index  > 2){return}
                     let pane = t.fixedData[key];
-                    let hc = pane.headerCanvas;
+                    let hc = pane.headerPaneCanvas;
                     let x = pane.startX;
                     let y = pane.startY;
                     let w = pane.paneWidth;
                     let h = pane.paneHeight;
-                    t.ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h)
+                    console.log(0,0,hc.width,hc.height,x,y,w,h)
+                    ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
+                    totalWidth += w;
+                    if(index == 0) totalheight = h;
                 })
+
+
+
+                // canvas.width = totalWidth;
+                // canvas.height = totalheight;
+
+                console.log(canvas.width,canvas.height)
+
+
+                return canvas;
+            },
+
+
+            render(){
+                const t = this;
+
+                // Object.keys(t.fixedData).map((key,index) => {
+                //     let pane = t.fixedData[key];
+                //     let hc = pane.headerPaneCanvas;
+                //     let x = pane.startX;
+                //     let y = pane.startY;
+                //     let w = pane.paneWidth;
+                //     let h = pane.paneHeight;
+                //     t.ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
+
+                // })
+              
+                t.ctx.drawImage(t.headerCanvas,
+                0,
+                0,
+                100,100)
+                // t.headerCanvas.width,
+                // t.headerCanvas.height);
+              
 
             },
 
