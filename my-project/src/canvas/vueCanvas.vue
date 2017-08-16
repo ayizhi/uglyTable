@@ -337,7 +337,9 @@ class AcrossLine{
                     rowCanvasList[i] = {
                         canvas: document.createElement('canvas'),
                         start: i * splitLen,
-                        end: (i+1) * splitLen
+                        end: (i+1) * splitLen,
+                        realStart:  (i+1) * splitLen,
+                        realEnd: i * splitLen,
                     }
                 }
 
@@ -350,45 +352,35 @@ class AcrossLine{
                     let y = pane.startY;
                     let w = pane.paneWidth;
                     let h = pane.paneHeight;
+
                     //属于哪个group
                     let i = parseInt((pane.startX + pane.paneWidth) / splitLen);
-                    console.log(i,rowCanvasList[i])
-                    let canvas = rowCanvasList[i].canvas;
-                    let ctx = canvas.getContext('2d')
-                    ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
+                    console.log(i,rowCanvasList[i]);
 
-                      ctx.font = 48 + 'px Arif';
-                ctx.textAlign = t.textAglin;    //start, end, left, right or center
-                ctx.textBaseline = 'middle';
-                ctx.fillText('lalalalasdkasdhakjs',10,24)
+                    let rowCanvas = rowCanvasList[i];
+                    let canvas = rowCanvas.canvas;
+                    let ctx = canvas.getContext('2d');
+
+                    //x需要减去前一个档
+                    let rX = x - rowCanvas.start;
+                    ctx.drawImage(hc,rX,y,w,h);
+
+                    //标记realStart & realEnd
+                    x < rowCanvas.realStart && (rowCanvas.realStart = x); 
+                    (x + pane.paneWidth) > rowCanvas.realEnd && (rowCanvas.realEnd = x + pane.paneWidth);
 
 
                 })
 
+                console.log(rowCanvasList)
 
-             
-                //split into 10 groups 
-                //first9 group
+
+        
             
-                // canvas.width = maxWidth;
-                // canvas.height = t.fixedData['table_index'].paneHeight;
-
-                
-
-              
-
-              
-
-                // Object.keys(t.fixedData).map((key,index) => {
-                //     let pane = t.fixedData[key];
-                //     let hc = pane.headerPaneCanvas;
-                //     let x = pane.startX;
-                //     let y = pane.startY;
-                //     let w = pane.paneWidth;
-                //     let h = pane.paneHeight;
-                //     ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
-                // })
-
+                //       ctx.font = 48 + 'px Arif';
+                // ctx.textAlign = t.textAglin;    //start, end, left, right or center
+                // ctx.textBaseline = 'middle';
+                // ctx.fillText('lalalalasdkasdhakjs',10,24)
 
 
 
