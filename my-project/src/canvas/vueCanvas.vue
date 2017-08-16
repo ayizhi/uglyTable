@@ -334,13 +334,14 @@ class AcrossLine{
                 let i;
                 //区分group
                 for(i = 0 ; i < minCanNum ; i ++){
-                    rowCanvasList[0] = {
+                    rowCanvasList[i] = {
                         canvas: document.createElement('canvas'),
                         start: i * splitLen,
                         end: (i+1) * splitLen
                     }
                 }
 
+                console.log(rowCanvasList)
 
                 Object.keys(t.fixedData).map((key,index) => {
                     let pane = t.fixedData[key];
@@ -350,10 +351,18 @@ class AcrossLine{
                     let w = pane.paneWidth;
                     let h = pane.paneHeight;
                     //属于哪个group
-                    let i = parseInt((pane.startX + pane.paneWidth) / splitLen) + 1;
+                    let i = parseInt((pane.startX + pane.paneWidth) / splitLen);
+                    console.log(i,rowCanvasList[i])
                     let canvas = rowCanvasList[i].canvas;
                     let ctx = canvas.getContext('2d')
                     ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
+
+                      ctx.font = 48 + 'px Arif';
+                ctx.textAlign = t.textAglin;    //start, end, left, right or center
+                ctx.textBaseline = 'middle';
+                ctx.fillText('lalalalasdkasdhakjs',10,24)
+
+
                 })
 
 
@@ -368,32 +377,26 @@ class AcrossLine{
 
               
 
-                ctx.font = 48 + 'px Arif';
-                ctx.textAlign = t.textAglin;    //start, end, left, right or center
-                ctx.textBaseline = 'middle';
-                ctx.fillText('lalalalasdkasdhakjs',10,24)
+              
 
-
-
-                Object.keys(t.fixedData).map((key,index) => {
-                    let pane = t.fixedData[key];
-                    let hc = pane.headerPaneCanvas;
-                    let x = pane.startX;
-                    let y = pane.startY;
-                    let w = pane.paneWidth;
-                    let h = pane.paneHeight;
-                    ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
-                })
+                // Object.keys(t.fixedData).map((key,index) => {
+                //     let pane = t.fixedData[key];
+                //     let hc = pane.headerPaneCanvas;
+                //     let x = pane.startX;
+                //     let y = pane.startY;
+                //     let w = pane.paneWidth;
+                //     let h = pane.paneHeight;
+                //     ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
+                // })
 
 
 
 
 
 
-                console.log(canvas.width,canvas.height)
 
 
-                return canvas;
+                return rowCanvasList;
             },
 
 
