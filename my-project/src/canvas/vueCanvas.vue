@@ -199,7 +199,7 @@ class AcrossLine{
             t.run();
         },
 
-        computed: {},
+
 
         methods: {
             dealData(){
@@ -328,22 +328,25 @@ class AcrossLine{
 
                 let rowCanvasList = [];
                 //google 浏览器canvas的最大宽度为32766px
-                let splitLen = 30000                
+                let splitLen = 20000                
                 //所以我们需要的最小canvas数为
                 let minCanNum = parseInt(maxWidth / splitLen) + 1;
                 let i;
                 //区分group
                 for(i = 0 ; i < minCanNum ; i ++){
+                    let canvas = document.createElement('canvas');
+                    canvas.width = splitLen;
+                    canvas.height = t.fixedData['table_index'].paneHeight;
                     rowCanvasList[i] = {
                         canvas: document.createElement('canvas'),
                         start: i * splitLen,
                         end: (i+1) * splitLen,
                         realStart:  (i+1) * splitLen,
                         realEnd: i * splitLen,
+                        index: i,
+                        splitLen: splitLen
                     }
                 }
-
-                console.log(rowCanvasList)
 
                 Object.keys(t.fixedData).map((key,index) => {
                     let pane = t.fixedData[key];
@@ -363,13 +366,14 @@ class AcrossLine{
 
                     //x需要减去前一个档
                     let rX = x - rowCanvas.start;
+                    console.log(rX)
                     ctx.drawImage(hc,rX,y,w,h);
 
                     //标记realStart & realEnd
                     x < rowCanvas.realStart && (rowCanvas.realStart = x); 
                     (x + pane.paneWidth) > rowCanvas.realEnd && (rowCanvas.realEnd = x + pane.paneWidth);
 
-
+                  
                 })
 
                 console.log(rowCanvasList)
@@ -394,6 +398,20 @@ class AcrossLine{
 
             render(){
                 const t = this;
+                let realStartX = 0;
+
+                t.headerCanvasList.map((cObj,index) => {
+                    //the 9 params
+                    let c = cObj.canvas;
+                    let startX = cObj.realStart - cObj.start;
+                    let endX = cObj.realEnd - cObj.start;
+                    let width = cObj.realEnd - cObj.realStart;
+                    t.ctx.drawImage(c,startX,0,width,c.height,
+                        realStartX + t.startX,t.startY,width,c.height
+                    )
+                    
+                    realStartX += width                    
+                })
 
                 // t.ctx.drawImage(t.headerCanvas,
                 // // 0,0,t.headerCanvas.width,t.headerCanvas.height,
