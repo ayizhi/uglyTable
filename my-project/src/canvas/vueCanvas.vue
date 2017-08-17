@@ -385,6 +385,7 @@ class AcrossLine{
                 console.log(ctxList,rowCanvasList)
 
                 return rowCanvasList;
+                alal
             },
 
 
