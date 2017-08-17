@@ -176,7 +176,7 @@ class AcrossLine{
                 headerCanvas: null,//表头canvas，临时，会在之后把整张表画成一张图
 
                 
-                startX: 0,
+                startX: -19000,
                 startY: 0,
             }
         },
@@ -349,7 +349,6 @@ class AcrossLine{
                         splitLen: splitLen
                     }
                 }
-                console.log(rowCanvasList)
 
                 let ctxList = {};
        
@@ -368,16 +367,20 @@ class AcrossLine{
                     let canvas = rowCanvas.canvas;
                     ctxList[i] = ctxList[i] == undefined ? canvas.getContext('2d') : ctxList[i];
                     let ctx = ctxList[i]
-                    // let ctx = canvas.getContext('2d');
+
 
                     //x需要减去前一个档
                     let rX = x - rowCanvas.start;
                     ctx.drawImage(hc,rX,y,w,h);
 
+                    
+
                     //标记realStart & realEnd
                     x < rowCanvas.realStart && (rowCanvas.realStart = x); 
                     (x + pane.paneWidth) > rowCanvas.realEnd && (rowCanvas.realEnd = x + pane.paneWidth);
                 })
+
+                console.log(rowCanvasList)
 
                 return rowCanvasList;
             },
@@ -388,24 +391,19 @@ class AcrossLine{
                 let realStartX = 0;
 
                 t.headerCanvasList.map((cObj,index) => {
-                    if (index != 0) return 
+                    if(index == 0){
+                        realStartX = 0
+                    } 
                     //the 9 params
                     let c = cObj.canvas;
                     let startX = cObj.realStart - cObj.start;
-                    let endX = cObj.realEnd - cObj.start;
                     let width = cObj.realEnd - cObj.realStart;
+                    
                     t.ctx.drawImage(c,
                         startX,0,width,c.height,
-                        // realStartX + t.startX,t.startY,width,c.height
-                        0,t.startY,width,c.height
-                        
-                    )
-                    
-                    realStartX += width                    
+                        cObj.realStart + t.startX,t.startY,width,c.height
+                    )    
                 })
-
-
-
             },
 
             run(){
