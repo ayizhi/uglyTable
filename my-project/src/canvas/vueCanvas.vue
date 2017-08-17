@@ -340,7 +340,7 @@ class AcrossLine{
                     canvas.height = t.fixedData['table_index'].paneHeight;
 
                     rowCanvasList[i] = {
-                        canvas: document.createElement('canvas'),
+                        canvas: canvas,
                         start: i * splitLen,
                         end: (i+1) * splitLen,
                         realStart:  (i+1) * splitLen,
@@ -363,18 +363,15 @@ class AcrossLine{
 
                     //属于哪个group
                     let i = parseInt((pane.startX + pane.paneWidth) / splitLen);
-                    console.log(i,rowCanvasList[i]);
 
                     let rowCanvas = rowCanvasList[i];
                     let canvas = rowCanvas.canvas;
-                    console.log(ctxList[i] == undefined)
                     ctxList[i] = ctxList[i] == undefined ? canvas.getContext('2d') : ctxList[i];
                     let ctx = ctxList[i]
                     // let ctx = canvas.getContext('2d');
 
                     //x需要减去前一个档
                     let rX = x - rowCanvas.start;
-                    console.log(rX,y,w,h,i)
                     ctx.drawImage(hc,rX,y,w,h);
 
                     //标记realStart & realEnd
@@ -382,10 +379,7 @@ class AcrossLine{
                     (x + pane.paneWidth) > rowCanvas.realEnd && (rowCanvas.realEnd = x + pane.paneWidth);
                 })
 
-                console.log(ctxList,rowCanvasList)
-
                 return rowCanvasList;
-
             },
 
 
@@ -400,11 +394,11 @@ class AcrossLine{
                     let startX = cObj.realStart - cObj.start;
                     let endX = cObj.realEnd - cObj.start;
                     let width = cObj.realEnd - cObj.realStart;
-                    // console.log('-',index,realStartX + t.startX,t.startX,realStartX,'-')
-                    // console.log(startX,0,width,c.height,realStartX + t.startX,t.startY,width,c.height)
                     t.ctx.drawImage(c,
                         startX,0,width,c.height,
-                        realStartX + t.startX,t.startY,width,c.height
+                        // realStartX + t.startX,t.startY,width,c.height
+                        0,t.startY,width,c.height
+                        
                     )
                     
                     realStartX += width                    
