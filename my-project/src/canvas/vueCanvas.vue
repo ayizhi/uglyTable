@@ -199,7 +199,7 @@ class AcrossLine{
             t.run();
         },
 
-        computed: {},
+
 
         methods: {
             dealData(){
@@ -328,73 +328,89 @@ class AcrossLine{
 
                 let rowCanvasList = [];
                 //google 浏览器canvas的最大宽度为32766px
-                let splitLen = 30000                
+                let splitLen = 20000                
                 //所以我们需要的最小canvas数为
                 let minCanNum = parseInt(maxWidth / splitLen) + 1;
                 let i;
                 //区分group
                 for(i = 0 ; i < minCanNum ; i ++){
-                console.log(i,minCanNum)
-                    
+
+                    let canvas = document.createElement('canvas');
+                    canvas.width = splitLen;
+                    canvas.height = t.fixedData['table_index'].paneHeight;
+
                     rowCanvasList[i] = {
                         canvas: document.createElement('canvas'),
                         start: i * splitLen,
-                        end: (i+1) * splitLen
+                        end: (i+1) * splitLen,
+                        realStart:  (i+1) * splitLen,
+                        realEnd: i * splitLen,
+                        index: i,
+                        splitLen: splitLen
                     }
                 }
                 console.log(rowCanvasList)
 
-
+                let ctxList = {};
+       
                 Object.keys(t.fixedData).map((key,index) => {
                     let pane = t.fixedData[key];
                     let hc = pane.headerPaneCanvas;
-                    let x = pane.startX;
+                    let x = pane.startX
                     let y = pane.startY;
                     let w = pane.paneWidth;
                     let h = pane.paneHeight;
+
                     //属于哪个group
                     let i = parseInt((pane.startX + pane.paneWidth) / splitLen);
-                    console.log(i)
-                    
-                    let canvas = rowCanvasList[i].canvas;
-                    let ctx = canvas.getContext('2d')
-                    ctx.drawImage(hc,0,0,hc.width,hc.height,x,y,w,h);
+                    console.log(i,rowCanvasList[i]);
+
+                    let rowCanvas = rowCanvasList[i];
+                    let canvas = rowCanvas.canvas;
+                    console.log(ctxList[i] == undefined)
+                    ctxList[i] = ctxList[i] == undefined ? canvas.getContext('2d') : ctxList[i];
+                    let ctx = ctxList[i]
+                    // let ctx = canvas.getContext('2d');
+
+                    //x需要减去前一个档
+                    let rX = x - rowCanvas.start;
+                    console.log(rX,y,w,h,i)
+                    ctx.drawImage(hc,rX,y,w,h);
+
+                    //标记realStart & realEnd
+                    x < rowCanvas.realStart && (rowCanvas.realStart = x); 
+                    (x + pane.paneWidth) > rowCanvas.realEnd && (rowCanvas.realEnd = x + pane.paneWidth);
                 })
 
-
-             
-                //split into 10 groups 
-                //first9 group
-            
-                // canvas.width = maxWidth;
-                // canvas.height = t.fixedData['table_index'].paneHeight;
-
-                
-
-              
-
-                // ctx.font = 48 + 'px Arif';
-                // ctx.textAlign = t.textAglin;    //start, end, left, right or center
-                // ctx.textBaseline = 'middle';
-                // ctx.fillText('lalalalasdkasdhakjs',10,24)
-
-
-
-
+                console.log(ctxList,rowCanvasList)
 
                 return rowCanvasList;
+
             },
 
 
             render(){
                 const t = this;
+                let realStartX = 0;
 
-                // t.ctx.drawImage(t.headerCanvas,
-                // // 0,0,t.headerCanvas.width,t.headerCanvas.height,
-                // t.startX,0,
-                // t.headerCanvas.width,
-                // t.headerCanvas.height);
-              
+                t.headerCanvasList.map((cObj,index) => {
+                    if (index != 0) return 
+                    //the 9 params
+                    let c = cObj.canvas;
+                    let startX = cObj.realStart - cObj.start;
+                    let endX = cObj.realEnd - cObj.start;
+                    let width = cObj.realEnd - cObj.realStart;
+                    // console.log('-',index,realStartX + t.startX,t.startX,realStartX,'-')
+                    // console.log(startX,0,width,c.height,realStartX + t.startX,t.startY,width,c.height)
+                    t.ctx.drawImage(c,
+                        startX,0,width,c.height,
+                        realStartX + t.startX,t.startY,width,c.height
+                    )
+                    
+                    realStartX += width                    
+                })
+
+
 
             },
 
