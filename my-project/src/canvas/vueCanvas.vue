@@ -348,13 +348,18 @@ class AcrossLine{
                     }
                 }
 
+                let ctxList = {};
+       
                 Object.keys(t.fixedData).map((key,index) => {
                     let pane = t.fixedData[key];
                     let hc = pane.headerPaneCanvas;
-                    let x = pane.startX;
+                    let x = pane.startX
+                   
                     let y = pane.startY;
                     let w = pane.paneWidth;
                     let h = pane.paneHeight;
+
+                    console.log(key,pane)
 
                     //属于哪个group
                     let i = parseInt((pane.startX + pane.paneWidth) / splitLen);
@@ -362,35 +367,22 @@ class AcrossLine{
 
                     let rowCanvas = rowCanvasList[i];
                     let canvas = rowCanvas.canvas;
-                    let ctx = canvas.getContext('2d');
+                    console.log(ctxList[i] == undefined)
+                    ctxList[i] = ctxList[i] == undefined ? canvas.getContext('2d') : ctxList[i];
+                    let ctx = ctxList[i]
+                    // let ctx = canvas.getContext('2d');
 
                     //x需要减去前一个档
                     let rX = x - rowCanvas.start;
-                    console.log(rX)
+                    console.log(rX,y,w,h,i)
                     ctx.drawImage(hc,rX,y,w,h);
 
                     //标记realStart & realEnd
                     x < rowCanvas.realStart && (rowCanvas.realStart = x); 
                     (x + pane.paneWidth) > rowCanvas.realEnd && (rowCanvas.realEnd = x + pane.paneWidth);
-
-                  
                 })
 
-                console.log(rowCanvasList)
-
-
-        
-            
-                //       ctx.font = 48 + 'px Arif';
-                // ctx.textAlign = t.textAglin;    //start, end, left, right or center
-                // ctx.textBaseline = 'middle';
-                // ctx.fillText('lalalalasdkasdhakjs',10,24)
-
-
-
-
-
-
+                console.log(ctxList,rowCanvasList)
 
                 return rowCanvasList;
             },
@@ -401,24 +393,23 @@ class AcrossLine{
                 let realStartX = 0;
 
                 t.headerCanvasList.map((cObj,index) => {
+                    if (index != 0) return 
                     //the 9 params
                     let c = cObj.canvas;
                     let startX = cObj.realStart - cObj.start;
                     let endX = cObj.realEnd - cObj.start;
                     let width = cObj.realEnd - cObj.realStart;
-                    t.ctx.drawImage(c,startX,0,width,c.height,
+                    // console.log('-',index,realStartX + t.startX,t.startX,realStartX,'-')
+                    // console.log(startX,0,width,c.height,realStartX + t.startX,t.startY,width,c.height)
+                    t.ctx.drawImage(c,
+                        startX,0,width,c.height,
                         realStartX + t.startX,t.startY,width,c.height
                     )
                     
                     realStartX += width                    
                 })
 
-                // t.ctx.drawImage(t.headerCanvas,
-                // // 0,0,t.headerCanvas.width,t.headerCanvas.height,
-                // t.startX,0,
-                // t.headerCanvas.width,
-                // t.headerCanvas.height);
-              
+
 
             },
 
