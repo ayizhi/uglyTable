@@ -351,29 +351,40 @@ class AcrossLine{
                 }
 
                 let ctxList = {};
+                //为了防止新开的一个group的初始x小于0
+                let fillX = 0;
        
                 Object.keys(t.fixedData).map((key,index) => {
                     let pane = t.fixedData[key];
+
                     let hc = pane.headerPaneCanvas;
                     let x = pane.startX
                     let y = pane.startY;
                     let w = pane.paneWidth;
                     let h = pane.paneHeight;
 
+                    
+
                     //属于哪个group
                     let i = parseInt((pane.startX + pane.paneWidth) / splitLen);
+                    console.log(index,'===',pane.index,x,i,pane.fieldName)
+                    
 
                     let rowCanvas = rowCanvasList[i];
                     let canvas = rowCanvas.canvas;
-                    ctxList[i] = ctxList[i] == undefined ? canvas.getContext('2d') : ctxList[i];
-                    let ctx = ctxList[i]
+                    // ctxList[i] = ctxList[i] == undefined ? canvas.getContext('2d') : ctxList[i];
+                    if(ctxList[i] == undefined){//说明刚建立
+                        ctxList[i] = canvas.getContext('2d');
+                        //判断初始是小于零
+                        let rx = x - rowCanvas.start;
+                        rx < 0 && (fillX = Math.abs(rx))
+                    }
 
+                    let ctx = ctxList[i]
 
                     //x需要减去前一个档
                     let rX = x - rowCanvas.start;
-                    ctx.drawImage(hc,rX,y,w,h);
-
-                    
+                    ctx.drawImage(hc,rX + fillX,y,w,h);
 
                     //标记realStart & realEnd
                     x < rowCanvas.realStart && (rowCanvas.realStart = x); 
@@ -398,9 +409,12 @@ class AcrossLine{
                     let c = cObj.canvas;
                     let startX = cObj.realStart - cObj.start;
                     let width = cObj.realEnd - cObj.realStart;
+
+                    // console.log(startX,0,width,c.height,
+                    //     cObj.realStart + t.startX,t.startY,width,c.height)
                     
                     t.ctx.drawImage(c,
-                        startX,0,width,c.height,
+                        0,0,width,c.height,
                         cObj.realStart + t.startX,t.startY,width,c.height
                     )    
                 })
