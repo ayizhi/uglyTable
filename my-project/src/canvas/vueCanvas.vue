@@ -175,8 +175,8 @@ class AcrossLine{
                 //headercanvas
                 headerCanvas: null,//表头canvas，临时，会在之后把整张表画成一张图
 
-                
-                startX: -19000,
+                //location
+                startX: 0,
                 startY: 0,
             }
         },
@@ -410,9 +410,6 @@ class AcrossLine{
                     let startX = cObj.realStart - cObj.start;
                     let width = cObj.realEnd - cObj.realStart;
 
-                    // console.log(startX,0,width,c.height,
-                    //     cObj.realStart + t.startX,t.startY,width,c.height)
-                    
                     t.ctx.drawImage(c,
                         0,0,width,c.height,
                         cObj.realStart + t.startX,t.startY,width,c.height
