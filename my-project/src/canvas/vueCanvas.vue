@@ -468,6 +468,7 @@ class AcrossLine{
                             realStartX = 0
                         } 
                         //the 9 params
+                        
                         let c = cObj.canvas;
                         let startX = cObj.realStart - cObj.start;
                         let width = cObj.realEnd - cObj.realStart;
