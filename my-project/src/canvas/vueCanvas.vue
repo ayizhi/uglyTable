@@ -147,7 +147,7 @@ class AcrossLine{
             padding: {
                 type: Number,
                 default: () => {
-                    return 10
+                    return 20
                 }
             },
         },
@@ -156,24 +156,27 @@ class AcrossLine{
             const t = this;
             const tableData = Data.data;
             let dataHeaders = tableData.reportHeader;
-            let dataBody = tableData.reportHeaderData;
-           
-           
+            let dataBody = tableData.reportData;
 
 
+    
             return {
                 canvas: null,
                 ctx: null,
                 tableData,
                 dataHeaders,
                 dataBody, 
-                fixedData : {},//重点，经过处理后的数据
+                fixedHeaderData : {},//重点，经过处理后的header数据
+                fixedBodyData: [],//经过处理后的body数据
 
                 acrossLine: new AcrossLine({width: 100}).canvas,
                 verticalLine: new VerticalLine({height: 100}).canvas,
 
                 //headercanvas
-                headerCanvas: null,//表头canvas，临时，会在之后把整张表画成一张图
+                headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图
+                bodyCanvasList: [],//表身canvas组
+
+                maxWidth: 0,//整张表的最大宽度
 
                 //location
                 startX: 0,
@@ -190,11 +193,20 @@ class AcrossLine{
             t.canvas.height = t.ratio * t.height;
 
             //处理数据
-            let maxWidth = t.dealData();
+            t.maxWidth = 0
+            t.maxWidth = t.dealHeaderData();//表头
+            t.dealBodyData();//表身
+
+            
 
             //画header（canvas 最大宽度是32767px）所以需要切分
-            t.headerCanvasList = t.drawRow(maxWidth);
+            t.headerCanvasList = t.drawRow(t.fixedHeaderData);
+            
+            t.fixedBodyData.map((data) => {
+                t.bodyCanvasList.push(t.drawRow(data));
+            })
 
+            console.log(t.bodyCanvasList)
 
             t.run();
         },
@@ -202,7 +214,7 @@ class AcrossLine{
 
 
         methods: {
-            dealData(){
+            dealHeaderData(){
                 const t = this;
 
                 //表头index
@@ -222,16 +234,13 @@ class AcrossLine{
                     let fieldName = header.fieldName;
                     //开头的空格
                     if(field == 'table_index' && fieldName == ''){
-                        let paneWidth =  50 * 2;
-                        t.fixedData[field] = {
-                            fieldName: '',
-                            startY: selfStartY,
-                            startX: selfStartX,
+                        let paneWidth =  30 * 2;
+                        t.fixedHeaderData[field] = {
                             index: index,
-                            headerLen: headerLen,
+                            type: 'header',                                                    
                             paneWidth: paneWidth * t.ratio,
                             paneHeight: t.headerPaneHeight * t.ratio,
-                            headerPaneCanvas: t.drawPane({
+                            paneCanvas: t.drawPane({
                                 type: 'header',
                                 index: index,
                                 headerLen: headerLen,
@@ -245,19 +254,15 @@ class AcrossLine{
                     }
 
                     //表头
-                    let paneWidth = fieldName.length * 50;
+                    let paneWidth = fieldName.length * 30;
                     let dataType = header.dataType;
                     let isFixed = header.isFixed
-                    t.fixedData[field] = {
-                        fieldName: fieldName,
-                        startY: selfStartY,
-                        startX: selfStartX,
+                    t.fixedHeaderData[field] = {
                         index: index,
-                        headerLen: headerLen,
+                        type: 'header',                        
                         paneWidth: paneWidth * t.ratio ,
                         paneHeight: t.headerPaneHeight * t.ratio,
-                        headerPaneCanvas: t.drawPane({
-                            type: 'header',
+                        paneCanvas: t.drawPane({
                             index: index,
                             headerLen: headerLen,
                             paneWidth: paneWidth * t.ratio ,
@@ -269,6 +274,48 @@ class AcrossLine{
                 })
 
                 return selfStartX;
+            },
+
+            dealBodyData(){
+                const t = this;
+
+                t.dataBody.map((data,index) => {
+                    let tmpData = {};
+                    let colPreSet = t.fixedHeaderData['table_index'];
+                    tmpData['table_index'] = {
+                            rowIndex: index,
+                            colIndex: colPreSet.index,
+                            type: 'body',                                                        
+                            paneWidth: colPreSet.paneWidth ,
+                            paneHeight: colPreSet.paneHeight,
+                            paneCanvas: t.drawPane({
+                                index: colPreSet.index,
+                                headerLen: colPreSet.headerLen,
+                                paneWidth: colPreSet.paneWidth,
+                                paneHeight: colPreSet.paneWidth,
+                                info: index
+                            })   
+                    }
+                    Object.keys(data).map((key) => {
+                        let colPreSet = t.fixedHeaderData[key]
+                        tmpData[key] = {
+                            rowIndex: index,
+                            colIndex: colPreSet.index,
+                            type: 'body',                                                        
+                            paneWidth: colPreSet.paneWidth ,
+                            paneHeight: colPreSet.paneHeight,
+                            paneCanvas: t.drawPane({
+                                index: colPreSet.index,
+                                headerLen: colPreSet.headerLen,
+                                paneWidth: colPreSet.paneWidth,
+                                paneHeight: colPreSet.paneWidth,
+                                info: data[key]
+                            })                       
+                        }
+                    })
+
+                    t.fixedBodyData.push(tmpData)
+                })
             },
 
             //绘制每个单元格
@@ -323,21 +370,20 @@ class AcrossLine{
             },
 
             //画每行
-            drawRow(maxWidth){
+            drawRow(tableRowData){
                 const t = this;
 
                 let rowCanvasList = [];
                 //google 浏览器canvas的最大宽度为32766px
                 let splitLen = 20000                
                 //所以我们需要的最小canvas数为
-                let minCanNum = parseInt(maxWidth / splitLen) + 1;
+                let minCanNum = parseInt(t.maxWidth / splitLen) + 1;
                 let i;
                 //区分group
                 for(i = 0 ; i < minCanNum ; i ++){
-
                     let canvas = document.createElement('canvas');
                     canvas.width = splitLen;
-                    canvas.height = t.fixedData['table_index'].paneHeight;
+                    canvas.height = tableRowData['table_index'].paneHeight;
 
                     rowCanvasList[i] = {
                         canvas: canvas,
@@ -353,26 +399,28 @@ class AcrossLine{
                 let ctxList = {};
                 //为了防止新开的一个group的初始x小于0
                 let fillX = 0;
-       
-                Object.keys(t.fixedData).map((key,index) => {
-                    let pane = t.fixedData[key];
+                let startX = 0;
+                let startY = 0;
+                
 
-                    let hc = pane.headerPaneCanvas;
-                    let x = pane.startX
-                    let y = pane.startY;
+                Object.keys(tableRowData).map((key,index) => {
+                    let pane = tableRowData[key];
+                    let hc = pane.paneCanvas;
+                    let x = startX;
+                    let y = startY;
                     let w = pane.paneWidth;
                     let h = pane.paneHeight;
 
-                    
+
 
                     //属于哪个group
-                    let i = parseInt((pane.startX + pane.paneWidth) / splitLen);
-                    console.log(index,'===',pane.index,x,i,pane.fieldName)
-                    
+                    let i = parseInt((startX + pane.paneWidth) / splitLen);
+
+                    startX += pane.paneWidth
 
                     let rowCanvas = rowCanvasList[i];
                     let canvas = rowCanvas.canvas;
-                    // ctxList[i] = ctxList[i] == undefined ? canvas.getContext('2d') : ctxList[i];
+
                     if(ctxList[i] == undefined){//说明刚建立
                         ctxList[i] = canvas.getContext('2d');
                         //判断初始是小于零
@@ -390,8 +438,6 @@ class AcrossLine{
                     x < rowCanvas.realStart && (rowCanvas.realStart = x); 
                     (x + pane.paneWidth) > rowCanvas.realEnd && (rowCanvas.realEnd = x + pane.paneWidth);
                 })
-
-                console.log(rowCanvasList)
 
                 return rowCanvasList;
             },
@@ -414,6 +460,22 @@ class AcrossLine{
                         0,0,width,c.height,
                         cObj.realStart + t.startX,t.startY,width,c.height
                     )    
+                })
+
+                t.bodyCanvasList.map((cList,index) => {
+                    cList.map((cObj,i) => {
+                        if(i == 0){
+                            realStartX = 0
+                        } 
+                        //the 9 params
+                        let c = cObj.canvas;
+                        let startX = cObj.realStart - cObj.start;
+                        let width = cObj.realEnd - cObj.realStart;
+                        t.ctx.drawImage(c,
+                            0,0,width,c.height,
+                            cObj.realStart + t.startX,t.startY + (index + 1) * t.bodyPaneHeight * t.ratio,width,c.height
+                        )
+                    })
                 })
             },
 
