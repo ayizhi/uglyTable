@@ -207,11 +207,64 @@ class AcrossLine{
             })
 
             t.run();
+
+            t.bindEvent();
         },
 
 
 
         methods: {
+
+            //============================ event ==========================
+            bindEvent(){
+                const t = this;
+                let draging = false;
+                let dragStartY = 0;
+                let dragStartX = 0;
+                let canvas = document.querySelector('#' + t.id)
+
+                document.onmousedown = (e) => {
+                    console.log('down')                
+                    
+                    draging = true;
+                    dragStartY = e.clientY;
+                    dragStartX = e.clientX;
+                }
+
+                document.onmousemove = (e) => {
+                    if(!draging) return
+
+                    //针对y
+                    if(t.startY > 0) {
+                        t.startY = 0;
+                    }else{
+                        let tmpY = t.startY + (e.clientY - dragStartY)
+                        if(tmpY <= 0){
+                            t.startY = tmpY
+                            dragStartY = e.clientY
+                        }    
+                    }
+
+                    //针对x
+                    if(t.startX > 0){
+                        t.startX = 0;
+                    }else{
+                        let tmpX = t.startX + (e.clientX - dragStartX)
+                        if(tmpX <= 0){
+                            t.startX = tmpX                    
+                            dragStartX = e.clientX
+                        }
+                    }
+                }
+
+                document.onmouseup = (e) => {
+                    draging = false;    
+                    console.log('up')                
+                }
+            },
+            //============================ event ==========================
+
+
             dealHeaderData(){
                 const t = this;
 
@@ -325,6 +378,9 @@ class AcrossLine{
                 let tHeight = obj.paneHeight;
                 canvas.width = tWidth;
                 canvas.height = tHeight;
+
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 ctx.drawImage(t.acrossLine,
                     0,
@@ -443,20 +499,6 @@ class AcrossLine{
                 const t = this;
                 let realStartX = 0;
 
-                t.headerCanvasList.map((cObj,index) => {
-                    if(index == 0){
-                        realStartX = 0
-                    } 
-                    //the 9 params
-                    let c = cObj.canvas;
-                    let startX = cObj.realStart - cObj.start;
-                    let width = cObj.realEnd - cObj.realStart;
-
-                    t.ctx.drawImage(c,
-                        0,0,width,c.height,
-                        cObj.realStart + t.startX,t.startY,width,c.height
-                    )    
-                })
 
                 t.bodyCanvasList.map((cList,index) => {
                     cList.map((cObj,i) => {
@@ -469,8 +511,7 @@ class AcrossLine{
                         let width = cObj.realEnd - cObj.realStart;
                         let startY = t.startY + (index * t.bodyPaneHeight + t.headerPaneHeight) * t.ratio
 
-                        // console.log(t.canvas.height,t.height)
-                    
+                        if(startX > t.canvas.width || startX + width < 0) return;
                         if (startY > t.canvas.height || startY + t.bodyPaneHeight * t.ratio < 0) return;
 
                         t.ctx.drawImage(c,
@@ -478,6 +519,24 @@ class AcrossLine{
                             cObj.realStart + t.startX, startY ,width,c.height
                         )
                     })
+                })
+
+
+                t.headerCanvasList.map((cObj,index) => {
+                    if(index == 0){
+                        realStartX = 0
+                    } 
+                    //the 9 params
+                    let c = cObj.canvas;
+                    let startX = cObj.realStart - cObj.start;
+                    let width = cObj.realEnd - cObj.realStart;
+
+                    if(startX > t.canvas.width || startX + width < 0) return;
+
+                    t.ctx.drawImage(c,
+                        0,0,width,c.height,
+                        cObj.realStart + t.startX,0,width,c.height
+                    )    
                 })
             },
 
