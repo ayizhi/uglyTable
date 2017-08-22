@@ -200,13 +200,11 @@ class AcrossLine{
             
 
             //画header（canvas 最大宽度是32767px）所以需要切分
-            t.headerCanvasList = t.drawRow(t.fixedHeaderData);
+            t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header');
             
             t.fixedBodyData.map((data) => {
-                t.bodyCanvasList.push(t.drawRow(data));
+                t.bodyCanvasList.push(t.drawRow(data,'body'));
             })
-
-            console.log(t.bodyCanvasList)
 
             t.run();
         },
@@ -282,33 +280,32 @@ class AcrossLine{
                 t.dataBody.map((data,index) => {
                     let tmpData = {};
                     let colPreSet = t.fixedHeaderData['table_index'];
-                    tmpData['table_index'] = {
+                    tmpData[0] = {
+                            field: 'table_index',
                             rowIndex: index,
-                            colIndex: colPreSet.index,
                             type: 'body',                                                        
                             paneWidth: colPreSet.paneWidth ,
-                            paneHeight: colPreSet.paneHeight,
+                            paneHeight: t.bodyPaneHeight * t.ratio,
                             paneCanvas: t.drawPane({
-                                index: colPreSet.index,
                                 headerLen: colPreSet.headerLen,
                                 paneWidth: colPreSet.paneWidth,
-                                paneHeight: colPreSet.paneWidth,
+                                paneHeight: t.bodyPaneHeight * t.ratio,
                                 info: index
                             })   
                     }
                     Object.keys(data).map((key) => {
                         let colPreSet = t.fixedHeaderData[key]
-                        tmpData[key] = {
+                        let i = colPreSet.index
+                        tmpData[i] = {
+                            field: key,
                             rowIndex: index,
-                            colIndex: colPreSet.index,
                             type: 'body',                                                        
                             paneWidth: colPreSet.paneWidth ,
-                            paneHeight: colPreSet.paneHeight,
+                            paneHeight: t.bodyPaneHeight * t.ratio,
                             paneCanvas: t.drawPane({
-                                index: colPreSet.index,
                                 headerLen: colPreSet.headerLen,
                                 paneWidth: colPreSet.paneWidth,
-                                paneHeight: colPreSet.paneWidth,
+                                paneHeight: t.bodyPaneHeight * t.ratio,
                                 info: data[key]
                             })                       
                         }
@@ -370,7 +367,7 @@ class AcrossLine{
             },
 
             //画每行
-            drawRow(tableRowData){
+            drawRow(tableRowData,type){
                 const t = this;
 
                 let rowCanvasList = [];
@@ -383,7 +380,7 @@ class AcrossLine{
                 for(i = 0 ; i < minCanNum ; i ++){
                     let canvas = document.createElement('canvas');
                     canvas.width = splitLen;
-                    canvas.height = tableRowData['table_index'].paneHeight;
+                    canvas.height = type == 'body' ? t.bodyPaneHeight * t.ratio : t.headerPaneHeight * t.ratio;
 
                     rowCanvasList[i] = {
                         canvas: canvas,
@@ -402,7 +399,6 @@ class AcrossLine{
                 let startX = 0;
                 let startY = 0;
                 
-
                 Object.keys(tableRowData).map((key,index) => {
                     let pane = tableRowData[key];
                     let hc = pane.paneCanvas;
@@ -468,13 +464,16 @@ class AcrossLine{
                             realStartX = 0
                         } 
                         //the 9 params
-                        
                         let c = cObj.canvas;
                         let startX = cObj.realStart - cObj.start;
                         let width = cObj.realEnd - cObj.realStart;
+                        let startY = t.startY + (index + 1) * t.bodyPaneHeight * t.ratio - 3
+
+                        if (startY > t.height) return;
+
                         t.ctx.drawImage(c,
                             0,0,width,c.height,
-                            cObj.realStart + t.startX,t.startY + (index + 1) * t.bodyPaneHeight * t.ratio,width,c.height
+                            cObj.realStart + t.startX, startY ,width,c.height
                         )
                     })
                 })
