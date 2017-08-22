@@ -467,9 +467,11 @@ class AcrossLine{
                         let c = cObj.canvas;
                         let startX = cObj.realStart - cObj.start;
                         let width = cObj.realEnd - cObj.realStart;
-                        let startY = t.startY + (index + 1) * t.bodyPaneHeight * t.ratio - 3
+                        let startY = t.startY + (index * t.bodyPaneHeight + t.headerPaneHeight) * t.ratio
 
-                        if (startY > t.height) return;
+                        // console.log(t.canvas.height,t.height)
+                    
+                        if (startY > t.canvas.height || startY + t.bodyPaneHeight * t.ratio < 0) return;
 
                         t.ctx.drawImage(c,
                             0,0,width,c.height,
