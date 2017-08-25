@@ -346,9 +346,12 @@ class AcrossLine{
                                 info: index
                             })   
                     }
-                    Object.keys(data).map((key) => {
-                        let colPreSet = t.fixedHeaderData[key]
-                        let i = colPreSet.index
+                    let allWidth = 0;
+
+                    Object.keys(t.fixedHeaderData).map((key) => {
+                        let colPreSet = t.fixedHeaderData[key]; 
+                        let colData = data[key] || '';
+                        let i = colPreSet.index;
                         tmpData[i] = {
                             field: key,
                             rowIndex: index,
@@ -359,11 +362,14 @@ class AcrossLine{
                                 headerLen: colPreSet.headerLen,
                                 paneWidth: colPreSet.paneWidth,
                                 paneHeight: t.bodyPaneHeight * t.ratio,
-                                info: data[key]
+                                info: colData
                             })                       
                         }
+                        allWidth += colPreSet.paneWidth
+                        
                     })
 
+                    console.log(allWidth,Object.keys(data).length)
                     t.fixedBodyData.push(tmpData)
                 })
             },
@@ -511,7 +517,7 @@ class AcrossLine{
                         let width = cObj.realEnd - cObj.realStart;
                         let startY = t.startY + (index * t.bodyPaneHeight + t.headerPaneHeight) * t.ratio
 
-                        if(startX > t.canvas.width || startX + width < 0) return;
+                        if(startX > t.canvas.width || startX + width < 0 || width < t.startX + t.canvas.width) return;
                         if (startY > t.canvas.height || startY + t.bodyPaneHeight * t.ratio < 0) return;
 
                         t.ctx.drawImage(c,
