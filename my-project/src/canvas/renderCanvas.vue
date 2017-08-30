@@ -175,10 +175,7 @@ class AcrossLine{
                 tableData,
                 dataHeaders,
                 dataBody, 
-                fixedHeaderData : {},//重点，经过处理后的header数据
-                fixedBodyData: [],//经过处理后的body数据
-
-
+              
 
                 acrossLine: new AcrossLine({width: 100}).canvas,
                 verticalLine: new VerticalLine({height: 100}).canvas,
@@ -191,6 +188,8 @@ class AcrossLine{
                 headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图
                 bodyCanvasList: [],//表身canvas组
 
+                fixedHeaderData : {},//重点，经过处理后的header数据
+                fixedBodyData: [],//经过处理后的body数据
 
                 // 目前需要将渲染canvas 拆分成四块
                 fixedCanvasList: [],//左上角固定不动的
@@ -216,7 +215,7 @@ class AcrossLine{
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
 
-            t.dealFixedData();
+            // t.dealFixedData();
 
             // //处理数据
             // t.maxWidth = 0;
