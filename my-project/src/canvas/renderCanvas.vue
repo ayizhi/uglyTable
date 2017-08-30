@@ -150,6 +150,13 @@ class AcrossLine{
                     return 20
                 }
             },
+
+            fixedColumnsLeft: {
+                type: Number,
+                default: () => {
+                    return 2
+                }
+            }
         },
 
         data(){
@@ -343,7 +350,7 @@ class AcrossLine{
                                 headerLen: colPreSet.headerLen,
                                 paneWidth: colPreSet.paneWidth,
                                 paneHeight: t.bodyPaneHeight * t.ratio,
-                                info: index
+                                info: index + 1
                             })   
                     }
                     let allWidth = 0;
@@ -352,6 +359,9 @@ class AcrossLine{
                         let colPreSet = t.fixedHeaderData[key]; 
                         let colData = data[key] || '';
                         let i = colPreSet.index;
+                        if(i == 0) return;
+                        
+
                         tmpData[i] = {
                             field: key,
                             rowIndex: index,
@@ -365,11 +375,9 @@ class AcrossLine{
                                 info: colData
                             })                       
                         }
-                        allWidth += colPreSet.paneWidth
-                        
+                        allWidth += colPreSet.paneWidth    
                     })
 
-                    console.log(allWidth,Object.keys(data).length)
                     t.fixedBodyData.push(tmpData)
                 })
             },
