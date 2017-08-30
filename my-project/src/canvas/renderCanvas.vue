@@ -9,6 +9,8 @@
 <script>
 import Data from './data';
 
+console.log(Data);
+
 
 
  //requestAnimationFrame兼容性封装
@@ -179,9 +181,21 @@ class AcrossLine{
                 acrossLine: new AcrossLine({width: 100}).canvas,
                 verticalLine: new VerticalLine({height: 100}).canvas,
 
-                //headercanvas
+                //currentData 因为数据量太大内存占用严重，所以准备做数据的本地缓存，想尝试下效果
+                currentData: [],
+
+
+
                 headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图
                 bodyCanvasList: [],//表身canvas组
+
+                // 目前需要将渲染canvas 拆分成四块
+                fixedCanvasList: [],//左上角固定不动的
+                leftColCanvasList: [],//左边
+                upRowCanvasList: [],//上部
+                mainCanvasList: [],//中间主要部分
+
+
 
                 maxWidth: 0,//整张表的最大宽度
 
@@ -199,8 +213,13 @@ class AcrossLine{
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
 
+            // t.dealFixedData();
+
             //处理数据
-            t.maxWidth = 0
+            t.maxWidth = 0;
+            
+            
+
             t.maxWidth = t.dealHeaderData();//表头
             t.dealBodyData();//表身
 
@@ -271,6 +290,12 @@ class AcrossLine{
             },
             //============================ event ==========================
 
+            //处理左上固定块数据
+            dealFixedData(){
+                const t = this;
+                console.log(t.dataHeaders)
+                
+            },
 
             dealHeaderData(){
                 const t = this;
@@ -528,10 +553,11 @@ class AcrossLine{
                         if(startX > t.canvas.width || startX + width < 0 || width < t.startX + t.canvas.width) return;
                         if (startY > t.canvas.height || startY + t.bodyPaneHeight * t.ratio < 0) return;
 
+
                         t.ctx.drawImage(c,
                             0,0,width,c.height,
                             cObj.realStart + t.startX, startY ,width,c.height
-                        )
+                        )          
                     })
                 })
 
