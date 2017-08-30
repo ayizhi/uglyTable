@@ -178,6 +178,8 @@ class AcrossLine{
                 fixedHeaderData : {},//重点，经过处理后的header数据
                 fixedBodyData: [],//经过处理后的body数据
 
+
+
                 acrossLine: new AcrossLine({width: 100}).canvas,
                 verticalLine: new VerticalLine({height: 100}).canvas,
 
@@ -188,6 +190,7 @@ class AcrossLine{
 
                 headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图
                 bodyCanvasList: [],//表身canvas组
+
 
                 // 目前需要将渲染canvas 拆分成四块
                 fixedCanvasList: [],//左上角固定不动的
@@ -213,28 +216,28 @@ class AcrossLine{
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
 
-            // t.dealFixedData();
+            t.dealFixedData();
 
-            //处理数据
-            t.maxWidth = 0;
+            // //处理数据
+            // t.maxWidth = 0;
             
             
 
-            t.maxWidth = t.dealHeaderData();//表头
-            t.dealBodyData();//表身
+            // t.maxWidth = t.dealHeaderData();//表头
+            // t.dealBodyData();//表身
 
             
 
-            //画header（canvas 最大宽度是32767px）所以需要切分
-            t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header');
+            // //画header（canvas 最大宽度是32767px）所以需要切分
+            // t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header');
             
-            t.fixedBodyData.map((data) => {
-                t.bodyCanvasList.push(t.drawRow(data,'body'));
-            })
+            // t.fixedBodyData.map((data) => {
+            //     t.bodyCanvasList.push(t.drawRow(data,'body'));
+            // })
 
-            t.run();
+            // t.run();
 
-            t.bindEvent();
+            // t.bindEvent();
         },
 
 
@@ -294,6 +297,33 @@ class AcrossLine{
             dealFixedData(){
                 const t = this;
                 console.log(t.dataHeaders)
+                let fixedList = [{
+                    field: 'table_index',
+                    fieldName: '',
+                }];
+
+                if(t.fixedColumnsLeft != 0){
+                    t.dataHeaders.slice(0, t.fixedColumnsLeft).map((d) => {
+                        fixedList.push(d)
+                    })
+                };
+
+                 let paneWidth = fieldName.length * 30;
+                let dataType = header.dataType;
+                let isFixed = header.isFixed
+                t.fixedHeaderData[field] = {
+                    index: index,
+                    type: 'header',                        
+                    paneWidth: paneWidth * t.ratio ,
+                    paneHeight: t.headerPaneHeight * t.ratio,
+                    paneCanvas: t.drawPane({
+                        index: index,
+                        headerLen: headerLen,
+                        paneWidth: paneWidth * t.ratio ,
+                        paneHeight: t.headerPaneHeight * t.ratio,
+                        info: fieldName
+                    })
+                };
                 
             },
 
