@@ -215,28 +215,25 @@ class AcrossLine{
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
 
-            // t.dealFixedData();
+            // t.dealFixedData
 
             // //处理数据
-            // t.maxWidth = 0;
-            
-            
-
-            // t.maxWidth = t.dealHeaderData();//表头
-            // t.dealBodyData();//表身
+            t.maxWidth = 0;
+            t.maxWidth = t.dealHeaderData();//表头
+            t.dealBodyData();//表身
 
             
 
-            // //画header（canvas 最大宽度是32767px）所以需要切分
-            // t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header');
+            //画header（canvas 最大宽度是32767px）所以需要切分
+            t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header');
             
-            // t.fixedBodyData.map((data) => {
-            //     t.bodyCanvasList.push(t.drawRow(data,'body'));
-            // })
+            t.fixedBodyData.map((data) => {
+                t.bodyCanvasList.push(t.drawRow(data,'body'));
+            })
 
-            // t.run();
+            t.run();
 
-            // t.bindEvent();
+            t.bindEvent();
         },
 
 
@@ -561,6 +558,7 @@ class AcrossLine{
 
                 return rowCanvasList;
             },
+
 
 
             render(){
