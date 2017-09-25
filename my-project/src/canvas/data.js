@@ -33,14 +33,13 @@ let data = {
 
 
 
+export default data
 
-console.log(data.data.reportData.length);
 
 
-const requestData = (app) => {
-    app.post('/ajax/get-table-data',function(req,res){
-        console.log(req,res)
-    })
-}
- 
-export default requestData
+
+
+
+
+
+

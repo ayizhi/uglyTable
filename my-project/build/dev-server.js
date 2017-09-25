@@ -85,11 +85,10 @@ devMiddleware.waitUntilValid(() => {
 
 
 //canvas 数据发送 start ===========================================================================
-
 //监听请求
-var requestData = require('../src/canvas/data.js')
+// var requestData = require('../server/data.js')
 
-requestData(app)
+// requestData(app)
 //canvas 数据发送 end ===========================================================================
 
 var server = app.listen(port)
