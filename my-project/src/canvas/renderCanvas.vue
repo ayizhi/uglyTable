@@ -167,6 +167,7 @@ class AcrossLine{
             let dataHeaders = tableData.reportHeader;
             let dataBody = tableData.reportData;
 
+            console.log('fixedColumnsLeft', t.fixedColumnsLeft)
 
     
             return {
@@ -215,7 +216,7 @@ class AcrossLine{
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
 
-            // t.dealFixedData
+
 
             // //处理数据
             t.maxWidth = 0;
