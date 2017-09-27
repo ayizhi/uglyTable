@@ -217,9 +217,7 @@ class AcrossLine{
             // //处理数据
             t.maxWidth = 0;
             t.maxWidth = t.dealHeaderData()//表头
-            t.dealBodyData();//表身
-
-            
+            t.dealBodyData();//表身 
 
             //画header（canvas 最大宽度是32767px）所以需要切分
             t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header');
@@ -227,6 +225,11 @@ class AcrossLine{
             t.fixedBodyData.map((data) => {
                 t.bodyCanvasList.push(t.drawRow(data,'body'));
             })
+
+
+            //处理数据（四个固定不动）
+            t.dealFixedData();
+
 
             t.run();
 
@@ -289,34 +292,39 @@ class AcrossLine{
             //处理左上固定块数据
             dealFixedData(){
                 const t = this;
-                console.log(t.dataHeaders)
                 let fixedList = [{
                     field: 'table_index',
                     fieldName: '',
                 }];
 
                 if(t.fixedColumnsLeft != 0){
-                    t.dataHeaders.slice(0, t.fixedColumnsLeft).map((d) => {
+                    t.dataHeaders.slice(1, t.fixedColumnsLeft).map((d) => {
                         fixedList.push(d)
                     })
                 };
 
-                 let paneWidth = fieldName.length * 30;
-                let dataType = header.dataType;
-                let isFixed = header.isFixed
-                t.fixedHeaderData[field] = {
-                    index: index,
-                    type: 'header',                        
-                    paneWidth: paneWidth * t.ratio ,
-                    paneHeight: t.headerPaneHeight * t.ratio,
-                    paneCanvas: t.drawPane({
+                console.log(fixedList,12312312)
+
+                fixedList.map((fixedItem) => {
+                    let paneWidth = fieldName.length * 30;
+                    let dataType = header.dataType;
+                    let isFixed = header.isFixed
+                    t.fixedHeaderData[field] = {
                         index: index,
-                        headerLen: headerLen,
+                        type: 'header',                        
                         paneWidth: paneWidth * t.ratio ,
                         paneHeight: t.headerPaneHeight * t.ratio,
-                        info: fieldName
-                    })
-                };
+                        paneCanvas: t.drawPane({
+                            index: index,
+                            headerLen: headerLen,
+                            paneWidth: paneWidth * t.ratio ,
+                            paneHeight: t.headerPaneHeight * t.ratio,
+                            info: fieldName
+                        })
+                    };
+                })
+
+
                 
             },
 
