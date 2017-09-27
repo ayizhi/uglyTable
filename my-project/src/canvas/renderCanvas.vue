@@ -188,6 +188,9 @@ class AcrossLine{
                 fixedHeaderData : {},//重点，经过处理后的header数据
                 fixedBodyData: [],//经过处理后的body数据
 
+                // 目前出来data
+                fixedLeftUpData: {},
+
                 // 目前需要将渲染canvas 拆分成四块
                 fixedCanvasList: [],//左上角固定不动的
                 leftColCanvasList: [],//左边
@@ -303,13 +306,17 @@ class AcrossLine{
                     })
                 };
 
-                console.log(fixedList,12312312)
+                //总长度，主要是画canvas时计算
+                let headerLen = fixedList.length;
 
-                fixedList.map((fixedItem) => {
+                fixedList.map((fixedItem,index) => {
+                    let field = fixedItem.field;
+                    let fieldName = fixedItem.fieldName;
+
                     let paneWidth = fieldName.length * 30;
-                    let dataType = header.dataType;
-                    let isFixed = header.isFixed
-                    t.fixedHeaderData[field] = {
+                    let dataType = fixedItem.dataType;
+                    let isFixed = fixedItem.isFixed
+                    t.fixedLeftUpData[field] = {
                         index: index,
                         type: 'header',                        
                         paneWidth: paneWidth * t.ratio ,
@@ -322,10 +329,7 @@ class AcrossLine{
                             info: fieldName
                         })
                     };
-                })
-
-
-                
+                })                
             },
 
             dealHeaderData(){
