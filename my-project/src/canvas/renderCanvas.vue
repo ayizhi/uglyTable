@@ -181,10 +181,6 @@ class AcrossLine{
                 acrossLine: new AcrossLine({width: 100}).canvas,
                 verticalLine: new VerticalLine({height: 100}).canvas,
 
-                //currentData 因为数据量太大内存占用严重，所以准备做数据的本地缓存，想尝试下效果
-                currentData: [],
-
-
 
                 headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图
                 bodyCanvasList: [],//表身canvas组
@@ -208,7 +204,7 @@ class AcrossLine{
             }
         },
 
-        mounted(){
+        async mounted(){
             const t = this;
 
             t.canvas = document.getElementById(t.id);
@@ -220,7 +216,7 @@ class AcrossLine{
 
             // //处理数据
             t.maxWidth = 0;
-            t.maxWidth = t.dealHeaderData();//表头
+            t.maxWidth = t.dealHeaderData()//表头
             t.dealBodyData();//表身
 
             
@@ -383,7 +379,7 @@ class AcrossLine{
                     selfStartX += paneWidth * t.ratio;  
                 })
 
-                return selfStartX;
+                return selfStartX
             },
 
             dealBodyData(){
