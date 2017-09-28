@@ -207,7 +207,7 @@ class AcrossLine{
             }
         },
 
-        async mounted(){
+        mounted(){
             const t = this;
 
             t.canvas = document.getElementById(t.id);
@@ -234,7 +234,7 @@ class AcrossLine{
             t.dealFixedData();
 
 
-            t.run();
+            t.run(``);
 
             t.bindEvent();
         },
