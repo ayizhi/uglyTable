@@ -193,10 +193,6 @@ class AcrossLine{
                 indexCanvasList: [],//左下在x方向上固定的index列
                 bodyCanvasList: [],//表身canvas组
 
-
-
-                headerheaderMaxWidth: 0,//整张表的最大宽度
-
                 //location
                 startX: 0,
                 startY: 0,
@@ -214,15 +210,14 @@ class AcrossLine{
 
 
             //画左上(左上，固定不动)
-            t.dealFixedData();
-            t.fixedCanvasList = t.drawRow(t.fixedLeftUpData,'header');
+            let leftMaxWidth = t.dealFixedData();
+            t.fixedCanvasList = t.drawRow(t.fixedLeftUpData,'header',leftMaxWidth);
 
 
 
             //画右上（header）
-            t.headerMaxWidth = 0;
-            t.headerMaxWidth = t.dealHeaderData()//表头
-            t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header');
+            let rightMaxWidth = t.dealHeaderData()//表头
+            t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header',rightMaxWidth);
 
             //画左下
             t.dealIndexData();
@@ -230,7 +225,7 @@ class AcrossLine{
             //画右下（body，表身）
             t.dealBodyData(); 
             t.fixedBodyData.map((data) => {
-                t.bodyCanvasList.push(t.drawRow(data,'body'));
+                t.bodyCanvasList.push(t.drawRow(data,'body',rightMaxWidth));
             })
 
 
@@ -511,21 +506,21 @@ class AcrossLine{
             },
 
             //画每行
-            drawRow(tableRowData,type){
+            drawRow(tableRowData,type,maxWidth){
                 const t = this;
 
                 let rowCanvasList = [];
                 //google 浏览器canvas的最大宽度为32766px
                 let splitLen = 20000                
                 //所以我们需要的最小canvas数为
-                let minCanNum = parseInt(t.headerMaxWidth / splitLen) + 1;
+                let minCanNum = parseInt(maxWidth / splitLen) + 1;
                 let i;
                 //区分group
                 for(i = 0 ; i < minCanNum ; i ++){
                     let canvas = document.createElement('canvas');
                     canvas.width = splitLen;
                     canvas.height = type == 'body' ? t.bodyPaneHeight * t.ratio : t.headerPaneHeight * t.ratio;
-
+                    
                     rowCanvasList[i] = {
                         canvas: canvas,
                         start: i * splitLen,
@@ -536,6 +531,7 @@ class AcrossLine{
                         splitLen: splitLen
                     }
                 }
+
 
                 let ctxList = {};
                 //为了防止新开的一个group的初始x小于0
