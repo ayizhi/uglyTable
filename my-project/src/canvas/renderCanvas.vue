@@ -232,6 +232,9 @@ class AcrossLine{
 
             //处理数据（四个固定不动）
             t.dealFixedData();
+            console.log(t.fixedLeftUpData)
+            t.fixedCanvasList = t.drawRow(t.fixedLeftUpData,'header');
+            console.log(t.fixedCanvasList)
 
 
             t.run(``);
@@ -306,9 +309,14 @@ class AcrossLine{
                     })
                 };
 
-                //总长度，主要是画canvas时计算
-                let headerLen = fixedList.length;
+                console.log(fixedList,'123123')
 
+
+                //总长度，主要是画canvas时计算
+                let headerLen = t.dataHeaders.length;
+                let selfStartX = 0;
+                let selfStartY = 0;
+            
                 fixedList.map((fixedItem,index) => {
                     let field = fixedItem.field;
                     let fieldName = fixedItem.fieldName;
