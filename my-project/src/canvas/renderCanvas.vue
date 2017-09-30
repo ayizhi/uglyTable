@@ -181,25 +181,21 @@ class AcrossLine{
                 acrossLine: new AcrossLine({width: 100}).canvas,
                 verticalLine: new VerticalLine({height: 100}).canvas,
 
-
-                headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图
-                bodyCanvasList: [],//表身canvas组
-
+                //数据容器
+                fixedLeftUpData: {}, //固定不动的data
                 fixedHeaderData : {},//重点，经过处理后的header数据
+                fixedLeftIndexData: [],//下在x方向上固定的index列
                 fixedBodyData: [],//经过处理后的body数据
 
-                // 目前出来data
-                fixedLeftUpData: {},
-
-                // 目前需要将渲染canvas 拆分成四块
+                //canvas容器
                 fixedCanvasList: [],//左上角固定不动的
-                leftColCanvasList: [],//左边
-                upRowCanvasList: [],//上部
-                mainCanvasList: [],//中间主要部分
+                headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图                
+                indexCanvasList: [],//左下在x方向上固定的index列
+                bodyCanvasList: [],//表身canvas组
 
 
 
-                maxWidth: 0,//整张表的最大宽度
+                headerheaderMaxWidth: 0,//整张表的最大宽度
 
                 //location
                 startX: 0,
@@ -217,27 +213,28 @@ class AcrossLine{
 
 
 
-            // //处理数据
-            t.maxWidth = 0;
-            t.maxWidth = t.dealHeaderData()//表头
-            t.dealBodyData();//表身 
+            //画左上(左上，固定不动)
+            t.dealFixedData();
+            t.fixedCanvasList = t.drawRow(t.fixedLeftUpData,'header');
 
-            //画header（canvas 最大宽度是32767px）所以需要切分
+
+
+            //画右上（header）
+            t.headerMaxWidth = 0;
+            t.headerMaxWidth = t.dealHeaderData()//表头
             t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header');
-            
+
+            //画左下
+            t.dealIndexData();
+
+            //画右下（body，表身）
+            t.dealBodyData(); 
             t.fixedBodyData.map((data) => {
                 t.bodyCanvasList.push(t.drawRow(data,'body'));
             })
 
 
-            //处理数据（四个固定不动）
-            t.dealFixedData();
-            console.log(t.fixedLeftUpData)
-            t.fixedCanvasList = t.drawRow(t.fixedLeftUpData,'header');
-            console.log(t.fixedCanvasList)
-
-
-            t.run(``);
+            t.run();
 
             t.bindEvent();
         },
@@ -304,13 +301,10 @@ class AcrossLine{
                 }];
 
                 if(t.fixedColumnsLeft != 0){
-                    t.dataHeaders.slice(1, t.fixedColumnsLeft).map((d) => {
+                    t.dataHeaders.slice(0, t.fixedColumnsLeft).map((d) => {
                         fixedList.push(d)
                     })
                 };
-
-                console.log(fixedList,'123123')
-
 
                 //总长度，主要是画canvas时计算
                 let headerLen = t.dataHeaders.length;
@@ -320,44 +314,10 @@ class AcrossLine{
                 fixedList.map((fixedItem,index) => {
                     let field = fixedItem.field;
                     let fieldName = fixedItem.fieldName;
-
                     let paneWidth = fieldName.length * 30;
                     let dataType = fixedItem.dataType;
-                    let isFixed = fixedItem.isFixed
-                    t.fixedLeftUpData[field] = {
-                        index: index,
-                        type: 'header',                        
-                        paneWidth: paneWidth * t.ratio ,
-                        paneHeight: t.headerPaneHeight * t.ratio,
-                        paneCanvas: t.drawPane({
-                            index: index,
-                            headerLen: headerLen,
-                            paneWidth: paneWidth * t.ratio ,
-                            paneHeight: t.headerPaneHeight * t.ratio,
-                            info: fieldName
-                        })
-                    };
-                })                
-            },
+                    let isFixed = fixedItem.isFixed;
 
-            dealHeaderData(){
-                const t = this;
-
-                //表头index
-                t.dataHeaders.unshift({
-                    field: 'table_index',
-                    fieldName: '',
-                })
-
-                //处理后的数据
-                let headerLen = t.dataHeaders.length;
-                let selfStartX = 0;
-                let selfStartY = 0;
-            
-                //表头
-                t.dataHeaders.map((header,index) => {
-                    let field = header.field;
-                    let fieldName = header.fieldName;
                     //开头的空格
                     if(field == 'table_index' && fieldName == ''){
                         let paneWidth =  30 * 2;
@@ -379,7 +339,47 @@ class AcrossLine{
                         return;        
                     }
 
-                    //表头
+
+                    t.fixedLeftUpData[field] = {
+                        index: index,
+                        type: 'header',                        
+                        paneWidth: paneWidth * t.ratio ,
+                        paneHeight: t.headerPaneHeight * t.ratio,
+                        paneCanvas: t.drawPane({
+                            index: index,
+                            headerLen: headerLen,
+                            paneWidth: paneWidth * t.ratio ,
+                            paneHeight: t.headerPaneHeight * t.ratio,
+                            info: fieldName
+                        })
+                    };
+                    selfStartX += paneWidth * t.ratio;                            
+                }) 
+                
+                return selfStartX;
+            },
+
+            //处理表头，也就是右上的数据
+            dealHeaderData(){
+                const t = this;
+
+                let currentHeaders = t.dataHeaders.slice(t.fixedColumnsLeft);
+
+                //表头index
+                currentHeaders.unshift({
+                    field: 'table_index',
+                    fieldName: '',
+                })
+
+                //处理后的数据
+                let headerLen = currentHeaders.length;
+                let selfStartX = 0;
+                let selfStartY = 0;
+            
+                //表头
+                currentHeaders.map((header,index) => {
+                    let field = header.field;
+                    let fieldName = header.fieldName;
                     let paneWidth = fieldName.length * 30;
                     let dataType = header.dataType;
                     let isFixed = header.isFixed
@@ -402,6 +402,12 @@ class AcrossLine{
                 return selfStartX
             },
 
+            //画左下
+            dealIndexData(){
+                const t = this;
+            },
+
+            //画右下
             dealBodyData(){
                 const t = this;
 
@@ -512,7 +518,7 @@ class AcrossLine{
                 //google 浏览器canvas的最大宽度为32766px
                 let splitLen = 20000                
                 //所以我们需要的最小canvas数为
-                let minCanNum = parseInt(t.maxWidth / splitLen) + 1;
+                let minCanNum = parseInt(t.headerMaxWidth / splitLen) + 1;
                 let i;
                 //区分group
                 for(i = 0 ; i < minCanNum ; i ++){
