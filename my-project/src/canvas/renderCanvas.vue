@@ -407,7 +407,8 @@ class AcrossLine{
                 const t = this;
 
                 t.dataBody.map((data,index) => {
-                    
+                    console.log(data)
+
                     let tmpData = {};
                     let colPreSet = t.fixedHeaderData['table_index'];
                     tmpData[0] = {
