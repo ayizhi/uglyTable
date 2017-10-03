@@ -167,8 +167,6 @@ class AcrossLine{
             let dataHeaders = tableData.reportHeader;
             let dataBody = tableData.reportData;
 
-            console.log('fixedColumnsLeft', t.fixedColumnsLeft)
-
     
             return {
                 canvas: null,
@@ -227,7 +225,6 @@ class AcrossLine{
             t.fixedBodyData.map((data) => {
                 t.bodyCanvasList.push(t.drawRow(data,'body',rightMaxWidth));
             })
-
 
             t.run();
 
@@ -316,7 +313,8 @@ class AcrossLine{
                     //开头的空格
                     if(field == 'table_index' && fieldName == ''){
                         let paneWidth =  30 * 2;
-                        t.fixedHeaderData[field] = {
+                        t.fixedLeftUpData[field] = {
+                            field: field,
                             index: index,
                             type: 'header',                                                    
                             paneWidth: paneWidth * t.ratio,
@@ -336,6 +334,7 @@ class AcrossLine{
 
 
                     t.fixedLeftUpData[field] = {
+                        field: field,                        
                         index: index,
                         type: 'header',                        
                         paneWidth: paneWidth * t.ratio ,
@@ -360,12 +359,6 @@ class AcrossLine{
 
                 let currentHeaders = t.dataHeaders.slice(t.fixedColumnsLeft);
 
-                //表头index
-                currentHeaders.unshift({
-                    field: 'table_index',
-                    fieldName: '',
-                })
-
                 //处理后的数据
                 let headerLen = currentHeaders.length;
                 let selfStartX = 0;
@@ -380,6 +373,7 @@ class AcrossLine{
                     let isFixed = header.isFixed
                     t.fixedHeaderData[field] = {
                         index: index,
+                        field: field,                                                
                         type: 'header',                        
                         paneWidth: paneWidth * t.ratio ,
                         paneHeight: t.headerPaneHeight * t.ratio,
@@ -400,17 +394,9 @@ class AcrossLine{
             //画左下
             dealIndexData(){
                 const t = this;
-            },
-
-            //画右下
-            dealBodyData(){
-                const t = this;
-
                 t.dataBody.map((data,index) => {
-                    console.log(data)
-
                     let tmpData = {};
-                    let colPreSet = t.fixedHeaderData['table_index'];
+                    let colPreSet = t.fixedLeftUpData['table_index'];
                     tmpData[0] = {
                             field: 'table_index',
                             rowIndex: index,
@@ -423,15 +409,12 @@ class AcrossLine{
                                 paneHeight: t.bodyPaneHeight * t.ratio,
                                 info: index + 1
                             })   
-                    }
-                    let allWidth = 0;
+                    };
 
-                    Object.keys(t.fixedHeaderData).map((key) => {
-                        let colPreSet = t.fixedHeaderData[key]; 
+                    Object.keys(t.fixedLeftUpData).map((key) => {
+                        let colPreSet = t.fixedLeftUpData[key];
                         let colData = data[key] || '';
                         let i = colPreSet.index;
-                        if(i == 0) return;
-                        
 
                         tmpData[i] = {
                             field: key,
@@ -446,9 +429,38 @@ class AcrossLine{
                                 info: colData
                             })                       
                         }
-                        allWidth += colPreSet.paneWidth    
                     })
+                    t.fixedLeftIndexData.push(tmpData)
+                })
+            },
 
+            //画右下
+            dealBodyData(){
+                const t = this;
+                t.dataBody.map((data,index) => {
+                    let tmpData = {};
+                    let allWidth = 0;
+
+                    Object.keys(t.fixedHeaderData).map((key) => {
+                        let colPreSet = t.fixedHeaderData[key]; 
+                        let colData = data[key] || '';
+                        let i = colPreSet.index;
+                        
+                        tmpData[i] = {
+                            field: key,
+                            rowIndex: index,
+                            type: 'body',                                                        
+                            paneWidth: colPreSet.paneWidth ,
+                            paneHeight: t.bodyPaneHeight * t.ratio,
+                            paneCanvas: t.drawPane({
+                                headerLen: colPreSet.headerLen,
+                                paneWidth: colPreSet.paneWidth,
+                                paneHeight: t.bodyPaneHeight * t.ratio,
+                                info: colData
+                            })                       
+                        }
+                        allWidth += colPreSet.paneWidth  
+                    })
                     t.fixedBodyData.push(tmpData)
                 })
             },
