@@ -205,20 +205,19 @@ class AcrossLine{
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
 
-
-
             //画左上(左上，固定不动)
-            let leftMaxWidth = t.dealFixedData();
+            let leftMaxWidth = t.dealFixedData();         
             t.fixedCanvasList = t.drawRow(t.fixedLeftUpData,'header',leftMaxWidth);
 
-
-
             //画右上（header）
-            let rightMaxWidth = t.dealHeaderData()//表头
+            let rightMaxWidth = t.dealHeaderData()//表头       
             t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header',rightMaxWidth);
 
             //画左下
             t.dealIndexData();
+            t.fixedLeftIndexData.map((data) => {
+                t.indexCanvasList = t.drawRow(data,'header',leftMaxWidth)
+            })
 
             //画右下（body，表身）
             t.dealBodyData(); 
@@ -525,7 +524,7 @@ class AcrossLine{
 
                 let rowCanvasList = [];
                 //google 浏览器canvas的最大宽度为32766px
-                let splitLen = 20000                
+                let splitLen = 10000                
                 //所以我们需要的最小canvas数为
                 let minCanNum = parseInt(maxWidth / splitLen) + 1;
                 let i;
@@ -552,7 +551,6 @@ class AcrossLine{
                 let fillX = 0;
                 let startX = 0;
                 let startY = 0;
-                
                 Object.keys(tableRowData).map((key,index) => {
                     let pane = tableRowData[key];
                     let hc = pane.paneCanvas;
@@ -560,8 +558,6 @@ class AcrossLine{
                     let y = startY;
                     let w = pane.paneWidth;
                     let h = pane.paneHeight;
-
-
 
                     //属于哪个group
                     let i = parseInt((startX + pane.paneWidth) / splitLen);
@@ -637,7 +633,23 @@ class AcrossLine{
                         0,0,width,c.height,
                         cObj.realStart + t.startX,0,width,c.height
                     )    
+                });
+
+                //渲染固定头
+                t.fixedCanvasList.map((cObj,index) => {
+                    if(index == 0){
+                        realStartX = 0
+                    } 
+                    let c = cObj.canvas;  
+                    let width = cObj.realEnd - cObj.realStart;
+                                      
+                    t.ctx.drawImage(c,
+                        0,0,width,c.height,
+                        0,0,width,c.height
+                    )  
                 })
+
+                
             },
 
             run(){
@@ -649,11 +661,7 @@ class AcrossLine{
                 }
                 _run();
             },
-
-         
-
         },
-
     }
    
 
