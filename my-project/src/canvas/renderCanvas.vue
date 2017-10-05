@@ -216,8 +216,10 @@ class AcrossLine{
             //画左下
             t.dealIndexData();
             t.fixedLeftIndexData.map((data) => {
-                t.indexCanvasList = t.drawRow(data,'header',leftMaxWidth)
+                t.indexCanvasList.push(t.drawRow(data,'header',leftMaxWidth))
             })
+
+            console.log(t.indexCanvasList)
 
             //画右下（body，表身）
             t.dealBodyData(); 
@@ -634,6 +636,24 @@ class AcrossLine{
                         cObj.realStart + t.startX,0,width,c.height
                     )    
                 });
+
+                //渲染index
+                t.indexCanvasList.map((cList,index) => {
+                     cList.map((cObj,i) => {
+                        //the 9 params
+                        let c = cObj.canvas;
+                        let startX = cObj.realStart - cObj.start;
+                        let width = cObj.realEnd - cObj.realStart;
+                        let startY = t.startY + (index * t.bodyPaneHeight + t.headerPaneHeight) * t.ratio
+
+                        if (startY > t.canvas.height || startY + t.bodyPaneHeight * t.ratio < 0) return;
+
+                        t.ctx.drawImage(c,
+                            0,0,width,c.height,
+                            0, startY ,width,c.height
+                        )          
+                    }) 
+                })
 
                 //渲染固定头
                 t.fixedCanvasList.map((cObj,index) => {
