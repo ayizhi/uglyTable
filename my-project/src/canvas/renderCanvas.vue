@@ -243,6 +243,9 @@ class AcrossLine{
                 let dragStartY = 0;
                 let dragStartX = 0;
                 let canvas = document.querySelector('#' + t.id)
+                var downBorder = (-t.dataBody.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                var rightBorder = -t.rightMaxWidth - t.leftMaxWidth + t.width * t.ratio
+                
 
                 document.onmousedown = (e) => {
                     console.log('down')                
@@ -263,17 +266,27 @@ class AcrossLine{
                         if(tmpY <= 0){
                             t.startY = tmpY
                             dragStartY = e.clientY
-                        }    
+                        }
+
+                        //滚到最下面
+                        if(t.startY < downBorder){
+                            t.startY = downBorder;
+                        }   
                     }
 
                     //针对x
                     if(t.startX > 0){
                         t.startX = 0;
-                    }else{
+                    }else {
                         let tmpX = t.startX + (e.clientX - dragStartX)
                         if(tmpX <= 0){
                             t.startX = tmpX                    
                             dragStartX = e.clientX
+                        }
+
+                        //滚到头
+                        if(t.startX < rightBorder){
+                            t.startX = rightBorder;
                         }
                     }
                 }
@@ -406,8 +419,6 @@ class AcrossLine{
                         let colPreSet = t.fixedLeftUpData[key];
                         let colData = data[key] || '';
                         let i = colPreSet.index;
-                        // console.log( 'index:', i,
-                        //         'headerLen:', colPreSet.headerLen)
                         tmpData[i] = {
                             field: key,
                             rowIndex: index,
@@ -594,7 +605,7 @@ class AcrossLine{
                 const t = this;
                 let realStartX = 0;
 
-
+                //main body
                 t.bodyCanvasList.map((cList,index) => {
                     cList.map((cObj,i) => {
                         if(i == 0){
