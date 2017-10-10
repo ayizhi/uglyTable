@@ -8,8 +8,9 @@
 </template>
 <script>
 import Data from './data';
-
+import theWorker from '../assets/js';
 console.log(Data);
+
 
 
 
@@ -203,31 +204,42 @@ class AcrossLine{
             const t = this;
 
             t.worker = t.$worker.create([
-                {
-                    message: 'dealData',
-                    func(self){
-                        //画左上(左上，固定不动)
-                        let leftMaxWidth = self.dealFixedData();         
-                        // t.fixedCanvasList = t.drawRow(t.fixedLeftUpData,'header',t.leftMaxWidth);
-
-                        //画右上（header）
-                        let rightMaxWidth = self.dealHeaderData()//表头       
-                        // t.headerCanvasList = t.drawRow(t.fixedHeaderData,'header',t.rightMaxWidth);
-
-                        //画左下
-                        self.dealIndexData();
-                        self.fixedLeftIndexData.map((data) => {
-                            // t.indexCanvasList.push(t.drawRow(data,'body',t.leftMaxWidth))
-                        })
-
-                        //画右下（body，表身）
-                        self.dealBodyData(); 
-                        self.fixedBodyData.map((data) => {
-                            // t.bodyCanvasList.push(t.drawRow(data,'body',t.rightMaxWidth));
-                        },[2])
-                    },
+                {//处理左上数据
+                    message: 'dealFixedData',
+                    func(dataHeaders,options){
+                        let fixedData = theWorker.dealFixedData(dataHeaders,options);
+                        return {
+                            fixedLeftUpData: fixedData.fixedLeftUpData,
+                            selfStartX: fixedData.selfStartX
+                        }
+                    }
+                },{//画右上（header）
+                    message: 'dealHeaderData',
+                    func(dataHeaders,options){
+                        let headerData = theWorker.dealHeaderData(dataHeaders,options)//表头
+                        return {
+                            fixedLeftUpData: fixedData.fixedLeftUpData,
+                            selfStartX: fixedData.selfStartX
+                        }       
+                    }
+                },{//左下
+                    message: 'dealIndexData',
+                    func(dataBody,fixedLeftUpData,options){
+                        let indexData = theWorker.dealIndexData(dataBody,fixedLeftUpData,options);
+                        return {
+                            fixedLeftIndexData: indexData.fixedLeftIndexData
+                        }
+                    }
+                },{//右下（main）
+                    message: 'dealBodyData',
+                    func(dataBody,fixedHeaderData,options){
+                        let bodyData = theWorker.dealBodyData(dataBody,fixedHeaderData,options);                         
+                        return {
+                            fixedBodyData: bodyData.fixedBodyData
+                        }
+                    }
                 }
-                ])
+            ])
         },
 
         mounted(){
@@ -315,147 +327,147 @@ class AcrossLine{
 
 
             //============================ 数据处理 start ========================
-            //处理左上固定块数据
-            dealFixedData(){
-                const t = this;
-                let fixedList = [{
-                    field: 'table_index',
-                    fieldName: '',
-                }];
+            // //处理左上固定块数据
+            // dealFixedData(){
+            //     const t = this;
+            //     let fixedList = [{
+            //         field: 'table_index',
+            //         fieldName: '',
+            //     }];
 
-                if(t.fixedColumnsLeft != 0){
-                    t.dataHeaders.slice(0, t.fixedColumnsLeft).map((d) => {
-                        fixedList.push(d)
-                    })
-                };
+            //     if(t.fixedColumnsLeft != 0){
+            //         t.dataHeaders.slice(0, t.fixedColumnsLeft).map((d) => {
+            //             fixedList.push(d)
+            //         })
+            //     };
 
-                //总长度，主要是画canvas时计算
-                let headerLen = fixedList.length;
-                let selfStartX = 0;
-                let selfStartY = 0;
+            //     //总长度，主要是画canvas时计算
+            //     let headerLen = fixedList.length;
+            //     let selfStartX = 0;
+            //     let selfStartY = 0;
             
-                fixedList.map((fixedItem,index) => {
-                    let field = fixedItem.field;
-                    let fieldName = fixedItem.fieldName;
-                    let paneWidth = fieldName.length * 30;
-                    let dataType = fixedItem.dataType;
-                    let isFixed = fixedItem.isFixed;
+            //     fixedList.map((fixedItem,index) => {
+            //         let field = fixedItem.field;
+            //         let fieldName = fixedItem.fieldName;
+            //         let paneWidth = fieldName.length * 30;
+            //         let dataType = fixedItem.dataType;
+            //         let isFixed = fixedItem.isFixed;
 
-                    //开头的空格
-                    if(field == 'table_index' && fieldName == ''){
-                        let paneWidth =  30 * 2;
-                        t.fixedLeftUpData[field] = {
-                            field: field,
-                            index: index,
-                            type: 'header',  
-                            headerLen: headerLen,                                                                              
-                            paneWidth: paneWidth * t.ratio,
-                            paneHeight: t.headerPaneHeight * t.ratio,
-                            info: fieldName
-                        };
+            //         //开头的空格
+            //         if(field == 'table_index' && fieldName == ''){
+            //             let paneWidth =  30 * 2;
+            //             t.fixedLeftUpData[field] = {
+            //                 field: field,
+            //                 index: index,
+            //                 type: 'header',  
+            //                 headerLen: headerLen,                                                                              
+            //                 paneWidth: paneWidth * t.ratio,
+            //                 paneHeight: t.headerPaneHeight * t.ratio,
+            //                 info: fieldName
+            //             };
                        
-                        selfStartX += paneWidth * t.ratio;                            
-                        return;        
-                    }
+            //             selfStartX += paneWidth * t.ratio;                            
+            //             return;        
+            //         }
 
 
-                    t.fixedLeftUpData[field] = {
-                        field: field,                        
-                        index: index,
-                        type: 'header',    
-                        headerLen: headerLen,                                            
-                        paneWidth: paneWidth * t.ratio ,
-                        paneHeight: t.headerPaneHeight * t.ratio,
-                        info: fieldName
-                    };
-                    selfStartX += paneWidth * t.ratio;                            
-                }) 
+            //         t.fixedLeftUpData[field] = {
+            //             field: field,                        
+            //             index: index,
+            //             type: 'header',    
+            //             headerLen: headerLen,                                            
+            //             paneWidth: paneWidth * t.ratio ,
+            //             paneHeight: t.headerPaneHeight * t.ratio,
+            //             info: fieldName
+            //         };
+            //         selfStartX += paneWidth * t.ratio;                            
+            //     }) 
                 
-                return selfStartX;
-            },
+            //     return selfStartX;
+            // },
 
-            //处理表头，也就是右上的数据
-            dealHeaderData(){
-                const t = this;
+            // //处理表头，也就是右上的数据
+            // dealHeaderData(){
+            //     const t = this;
 
-                let currentHeaders = t.dataHeaders.slice(t.fixedColumnsLeft);
+            //     let currentHeaders = t.dataHeaders.slice(t.fixedColumnsLeft);
 
-                //处理后的数据
-                let headerLen = currentHeaders.length;
-                let selfStartX = 0;
-                let selfStartY = 0;
+            //     //处理后的数据
+            //     let headerLen = currentHeaders.length;
+            //     let selfStartX = 0;
+            //     let selfStartY = 0;
             
-                //表头
-                currentHeaders.map((header,index) => {
-                    let field = header.field;
-                    let fieldName = header.fieldName;
-                    let paneWidth = fieldName.length * 30;
-                    let dataType = header.dataType;
-                    let isFixed = header.isFixed
-                    t.fixedHeaderData[field] = {
-                        index: index,
-                        field: field,                                                
-                        type: 'header',  
-                        headerLen: headerLen,                                              
-                        paneWidth: paneWidth * t.ratio ,
-                        paneHeight: t.headerPaneHeight * t.ratio,
-                        info: fieldName
-                    };
-                    selfStartX += paneWidth * t.ratio;  
-                })
+            //     //表头
+            //     currentHeaders.map((header,index) => {
+            //         let field = header.field;
+            //         let fieldName = header.fieldName;
+            //         let paneWidth = fieldName.length * 30;
+            //         let dataType = header.dataType;
+            //         let isFixed = header.isFixed
+            //         t.fixedHeaderData[field] = {
+            //             index: index,
+            //             field: field,                                                
+            //             type: 'header',  
+            //             headerLen: headerLen,                                              
+            //             paneWidth: paneWidth * t.ratio ,
+            //             paneHeight: t.headerPaneHeight * t.ratio,
+            //             info: fieldName
+            //         };
+            //         selfStartX += paneWidth * t.ratio;  
+            //     })
 
-                return selfStartX
-            },
+            //     return selfStartX
+            // },
 
-            //画左下
-            dealIndexData(){
-                const t = this;
-                t.dataBody.map((data,index) => {
-                    let tmpData = {};
-                    Object.keys(t.fixedLeftUpData).map((key) => {
-                        let colPreSet = t.fixedLeftUpData[key];
-                        let colData = data[key] || '';
-                        let i = colPreSet.index;
-                        tmpData[i] = {
-                            field: key,
-                            rowIndex: index,
-                            type: 'body',  
-                            index: i,                                                                                  
-                            paneWidth: colPreSet.paneWidth ,
-                            paneHeight: t.bodyPaneHeight * t.ratio,
-                            info: key == 'table_index' ? index + 1 : colData                     
-                        }
-                    })
-                    t.fixedLeftIndexData.push(tmpData)
-                })
-            },
+            // //画左下
+            // dealIndexData(){
+            //     const t = this;
+            //     t.dataBody.map((data,index) => {
+            //         let tmpData = {};
+            //         Object.keys(t.fixedLeftUpData).map((key) => {
+            //             let colPreSet = t.fixedLeftUpData[key];
+            //             let colData = data[key] || '';
+            //             let i = colPreSet.index;
+            //             tmpData[i] = {
+            //                 field: key,
+            //                 rowIndex: index,
+            //                 type: 'body',  
+            //                 index: i,                                                                                  
+            //                 paneWidth: colPreSet.paneWidth ,
+            //                 paneHeight: t.bodyPaneHeight * t.ratio,
+            //                 info: key == 'table_index' ? index + 1 : colData                     
+            //             }
+            //         })
+            //         t.fixedLeftIndexData.push(tmpData)
+            //     })
+            // },
 
-            //画右下
-            dealBodyData(){
-                const t = this;
-                t.dataBody.map((data,index) => {
-                    let tmpData = {};
-                    let allWidth = 0;
+            // //画右下
+            // dealBodyData(){
+            //     const t = this;
+            //     t.dataBody.map((data,index) => {
+            //         let tmpData = {};
+            //         let allWidth = 0;
 
-                    Object.keys(t.fixedHeaderData).map((key) => {
-                        let colPreSet = t.fixedHeaderData[key]; 
-                        let colData = data[key] || '';
-                        let i = colPreSet.index;
+            //         Object.keys(t.fixedHeaderData).map((key) => {
+            //             let colPreSet = t.fixedHeaderData[key]; 
+            //             let colData = data[key] || '';
+            //             let i = colPreSet.index;
 
-                        tmpData[i] = {
-                            field: key,
-                            rowIndex: index,
-                            type: 'body',   
-                            index: i,                                                                                 
-                            paneWidth: colPreSet.paneWidth ,
-                            paneHeight: t.bodyPaneHeight * t.ratio,
-                            info: colData                    
-                        }
-                        allWidth += colPreSet.paneWidth  
-                    })
-                    t.fixedBodyData.push(tmpData)
-                })
-            },
+            //             tmpData[i] = {
+            //                 field: key,
+            //                 rowIndex: index,
+            //                 type: 'body',   
+            //                 index: i,                                                                                 
+            //                 paneWidth: colPreSet.paneWidth ,
+            //                 paneHeight: t.bodyPaneHeight * t.ratio,
+            //                 info: colData                    
+            //             }
+            //             allWidth += colPreSet.paneWidth  
+            //         })
+            //         t.fixedBodyData.push(tmpData)
+            //     })
+            // },
 
             //============================ 数据处理 end ========================
             
