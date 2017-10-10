@@ -8,11 +8,8 @@
 </template>
 <script>
 import Data from './data';
-import * as theWorker from '../assets/js/worker';
+import workerConfig from '../assets/js/workerConfig';
 console.log(Data);
-
-
-
 
  //requestAnimationFrame兼容性封装
 (() => {  
@@ -203,43 +200,7 @@ class AcrossLine{
         created(){
             const t = this;
 
-            t.worker = t.$worker.create([
-                {//处理左上数据
-                    message: 'dealFixedData',
-                    func(dataHeaders,options){
-                        let fixedData = theWorker.dealFixedData(dataHeaders,options);
-                        return {
-                            fixedLeftUpData: fixedData.fixedLeftUpData,
-                            selfStartX: fixedData.selfStartX
-                        }
-                    }
-                },{//画右上（header）
-                    message: 'dealHeaderData',
-                    func(dataHeaders,options){
-                        let headerData = theWorker.dealHeaderData(dataHeaders,options)//表头
-                        return {
-                            fixedLeftUpData: fixedData.fixedLeftUpData,
-                            selfStartX: fixedData.selfStartX
-                        }       
-                    }
-                },{//左下
-                    message: 'dealIndexData',
-                    func(dataBody,fixedLeftUpData,options){
-                        let indexData = theWorker.dealIndexData(dataBody,fixedLeftUpData,options);
-                        return {
-                            fixedLeftIndexData: indexData.fixedLeftIndexData
-                        }
-                    }
-                },{//右下（main）
-                    message: 'dealBodyData',
-                    func(dataBody,fixedHeaderData,options){
-                        let bodyData = theWorker.dealBodyData(dataBody,fixedHeaderData,options);                         
-                        return {
-                            fixedBodyData: bodyData.fixedBodyData
-                        }
-                    }
-                }
-            ])
+            t.worker = t.$worker.create(workerConfig)
         },
 
         mounted(){
@@ -251,13 +212,42 @@ class AcrossLine{
             t.canvas.height = t.ratio * t.height;
 
             console.log(666)
-            t.worker.postMessage('dealFixedData',[t.dataHeaders,{
+
+            //headerOptions
+            let headerOptions = {
                 fixedColumnsLeft: t.fixedColumnsLeft,
                 ratio: t.ratio,
                 headerPaneHeight: t.headerPaneHeight
-            }]).then((data) => {
-                console.log(data,'====')
+            }
+
+            //bodyOptions
+            let bodyOptions = {
+                ratio: t.ratio,
+                bodyPaneHeight: t.bodyPaneHeight
+            }
+
+            //左上
+            t.worker.postMessage('dealFixedData',[t.dataHeaders,headerOptions])
+            .then((leftHeaderData) => {
+                console.log(leftHeaderData,'---')
+                //左下
+                t.worker.postMessage('dealIndexData',[t.dataBody,leftHeaderData.fixedLeftUpData,bodyOptions])
+                .then((leftBodyData) => {
+                    console.log(leftBodyData,'---|---')
+                })
             })
+
+            //右上
+            t.worker.postMessage('dealHeaderData',[t.dataHeaders,headerOptions])
+            .then((rightHeaderData) => {
+                console.log(rightHeaderData,'===')
+                //左下
+                t.worker.postMessage('dealIndexData',[t.dataBody,rightHeaderData.fixedHeaderData,bodyOptions])
+                .then((rightBodyData) => {
+                    console.log(rightBodyData,'===|===')
+                })
+            })
+
 
  
             t.run();
