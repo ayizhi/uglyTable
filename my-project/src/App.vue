@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import vueCanvas from './canvas/renderCanvas2'
+import vueCanvas from './canvas/renderCanvas'
 
 export default {
   name: 'app',

@@ -8,7 +8,7 @@
 </template>
 <script>
 import Data from './data';
-import theWorker from '../assets/js';
+import * as theWorker from '../assets/js/worker';
 console.log(Data);
 
 
@@ -251,7 +251,13 @@ class AcrossLine{
             t.canvas.height = t.ratio * t.height;
 
             console.log(666)
-            t.worker.postMessage('dealData',[t])
+            t.worker.postMessage('dealFixedData',[t.dataHeaders,{
+                fixedColumnsLeft: t.fixedColumnsLeft,
+                ratio: t.ratio,
+                headerPaneHeight: t.headerPaneHeight
+            }]).then((data) => {
+                console.log(data,'====')
+            })
 
  
             t.run();
