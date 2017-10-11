@@ -43,7 +43,11 @@ let workerConfig = [
                 fixedLeftUpData[field] = {
                     field: field,                        
                     index: index,
-                    type: 'header',    
+                    type: 'header', 
+                    startX: selfStartX,
+                    endX: selfStartX + paneWidth * ratio,
+                    startY: selfStartY,
+                    endY: selfStartY + headerPaneHeight * ratio,
                     headerLen: headerLen,                                            
                     paneWidth: paneWidth * ratio ,
                     paneHeight: headerPaneHeight * ratio,
@@ -54,7 +58,7 @@ let workerConfig = [
 
             return {
                 fixedLeftUpData,
-                selfStartX
+                width: selfStartX
             }
         },
     },{//画右上（header）
@@ -96,8 +100,8 @@ let workerConfig = [
             })
 
             return {
-                selfStartX,
-                fixedHeaderData
+                fixedHeaderData,
+                width: selfStartX                
             }      
         }
     },{//左下
