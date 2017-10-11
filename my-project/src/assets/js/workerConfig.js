@@ -1,5 +1,8 @@
+
+
 let workerConfig = [
-    {//处理左上数据
+    //处理左上数据
+    {
         message: 'dealFixedData',
         func(dataHeaders,options){
             //options
@@ -28,32 +31,41 @@ let workerConfig = [
             //main
             let fixedLeftUpData = {};
 
+            //header长度的配置
+            let headerLengthConfig = {
+                table_index: 2,
+                mobile: 11,
+            }
+
             fixedList.map((fixedItem,index) => {
                 let field = fixedItem.field;
                 let fieldName = fixedItem.fieldName;
-                let paneWidth = fieldName.length * 30;
+                let paneWidth = headerLengthConfig[field] * 30 || fieldName.length * 30;
                 let dataType = fixedItem.dataType;
                 let isFixed = fixedItem.isFixed;
 
-                //开头的空格
-                if(field == 'table_index' && fieldName == ''){
-                    paneWidth =  30 * 2;     
-                }
+                //position
+                let startX = selfStartX;
+                let endX = selfStartX + paneWidth * ratio;
+                let startY = selfStartY;
+                let endY = startY + headerPaneHeight * ratio;
 
                 fixedLeftUpData[field] = {
                     field: field,                        
                     index: index,
                     type: 'header', 
-                    startX: selfStartX,
-                    endX: selfStartX + paneWidth * ratio,
-                    startY: selfStartY,
-                    endY: selfStartY + headerPaneHeight * ratio,
+                    startX,
+                    endX,
+                    startY,
+                    endY,
                     headerLen: headerLen,                                            
                     paneWidth: paneWidth * ratio ,
                     paneHeight: headerPaneHeight * ratio,
                     info: fieldName
                 };
-                selfStartX += paneWidth * ratio;                            
+
+                //reset startX
+                selfStartX = endX;                            
             }) 
 
             return {
@@ -61,7 +73,10 @@ let workerConfig = [
                 width: selfStartX
             }
         },
-    },{//画右上（header）
+    },
+
+    //画右上（header）
+    {
         message: 'dealHeaderData',
         func(dataHeaders,options){
             //options
@@ -79,24 +94,43 @@ let workerConfig = [
 
             //main
             let fixedHeaderData = {};
+    
+            //header长度的配置
+            let headerLengthConfig = {
+                table_index: 2,
+                mobile: 11,
+            }
 
             //表头
             currentHeaders.map((header,index) => {
                 let field = header.field;
                 let fieldName = header.fieldName;
-                let paneWidth = fieldName.length * 30;
+                let paneWidth = headerLengthConfig[field] * 30 || fieldName.length * 30;                
                 let dataType = header.dataType;
-                let isFixed = header.isFixed
+                let isFixed = header.isFixed;
+
+                //position
+                let startX = selfStartX;
+                let endX = selfStartX + paneWidth * ratio;
+                let startY = selfStartY;
+                let endY = startY + headerPaneHeight * ratio;
+
                 fixedHeaderData[field] = {
                     index: index,
                     field: field,                                                
-                    type: 'header',  
+                    type: 'header', 
+                    startX,
+                    endX,
+                    startY,
+                    endY,
                     headerLen: headerLen,                                              
                     paneWidth: paneWidth * ratio ,
                     paneHeight: headerPaneHeight * ratio,
                     info: fieldName
                 };
-                selfStartX += paneWidth * ratio;  
+
+                //reset startX                
+                selfStartX = endX;  
             })
 
             return {
@@ -104,12 +138,19 @@ let workerConfig = [
                 width: selfStartX                
             }      
         }
-    },{//左下
+    },
+
+    //左下
+    {
         message: 'dealIndexData',
         func(dataBody,fixedLeftUpData,options){
             //options
             let ratio = options.ratio;
             let bodyPaneHeight = options.bodyPaneHeight;
+
+            //position
+            let selfStartX = 0;
+            let selfStartY = 0;
             
             //main
             let fixedLeftIndexData = [];
@@ -119,19 +160,37 @@ let workerConfig = [
                 let tmpData = {};
                 let key;
 
+                selfStartX = 0;
+                selfStartY = index * bodyPaneHeight * ratio
+
                 for(key in fixedLeftUpData){
                     let colPreSet = fixedLeftUpData[key];
                     let colData = data[key] || '';
                     let i = colPreSet.index;
+                    let paneWidth = colPreSet.paneWidth;
+
+                    //position
+                    let startX = selfStartX;
+                    let endX = selfStartX + paneWidth;
+                    let startY = selfStartY;
+                    let endY = startY + bodyPaneHeight * ratio;
+
                     tmpData[i] = {
+                        rowIndex: index,                        
                         field: key,
-                        rowIndex: index,
                         type: 'body',  
+                        startX,
+                        endX,
+                        startY,
+                        endY,
                         index: i,                                                                                  
-                        paneWidth: colPreSet.paneWidth ,
+                        paneWidth: paneWidth,
                         paneHeight: bodyPaneHeight * ratio,
                         info: key == 'table_index' ? index + 1 : colData                     
                     }
+
+                    //reset selfStartX
+                    selfStartX = endX;
                 }
                 fixedLeftIndexData.push(tmpData)
             })
@@ -140,12 +199,19 @@ let workerConfig = [
                 fixedLeftIndexData
             }
         }
-    },{//右下（main）
+    },
+
+    //右下（main）
+    {
         message: 'dealBodyData',
         func(dataBody,fixedHeaderData,options){
             //options
             let ratio = options.ratio;
             let bodyPaneHeight = options.bodyPaneHeight;
+
+            //position
+            let selfStartX = 0;
+            let selfStartY = 0;
 
             //main
             let fixedBodyData = []
@@ -158,13 +224,24 @@ let workerConfig = [
                     let colPreSet = fixedHeaderData[key]; 
                     let colData = data[key] || '';
                     let i = colPreSet.index;
+                    let paneWidth = colPreSet.paneWidth;
+                    
+                    //position
+                    let startX = selfStartX;
+                    let endX = selfStartX + paneWidth;
+                    let startY = selfStartY;
+                    let endY = startY + bodyPaneHeight * ratio;
 
                     tmpData[i] = {
+                        rowIndex: index,                        
                         field: key,
-                        rowIndex: index,
-                        type: 'body',   
+                        type: 'body',  
+                        startX,
+                        endX,
+                        startY,
+                        endY, 
                         index: i,                                                                                 
-                        paneWidth: colPreSet.paneWidth ,
+                        paneWidth: paneWidth ,
                         paneHeight: bodyPaneHeight * ratio,
                         info: colData                    
                     }
