@@ -241,8 +241,8 @@ class AcrossLine{
             t.worker.postMessage('dealHeaderData',[t.dataHeaders,headerOptions])
             .then((rightHeaderData) => {
                 console.log(rightHeaderData,'===')
-                //左下
-                t.worker.postMessage('dealIndexData',[t.dataBody,rightHeaderData.fixedHeaderData,bodyOptions])
+                //右下
+                t.worker.postMessage('dealBodyData',[t.dataBody,rightHeaderData.fixedHeaderData,bodyOptions])
                 .then((rightBodyData) => {
                     console.log(rightBodyData,'===|===')
                 })
