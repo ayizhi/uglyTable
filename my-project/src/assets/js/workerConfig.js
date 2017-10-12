@@ -175,8 +175,6 @@ let workerConfig = [
                     let startY = selfStartY;
                     let endY = startY + bodyPaneHeight * ratio;
 
-
-
                     tmpData[i] = {
                         rowIndex: index,                        
                         field: key,
@@ -190,8 +188,7 @@ let workerConfig = [
                         paneHeight: bodyPaneHeight * ratio,
                         info: key == 'table_index' ? index + 1 : colData                     
                     }
-                
-
+            
                     //reset selfStartX
                     selfStartX = endX;
                 }
@@ -223,6 +220,9 @@ let workerConfig = [
                 let tmpData = {};
                 let key;
 
+                selfStartX = 0;
+                selfStartY = index * bodyPaneHeight * ratio
+
                 for(key in fixedHeaderData){
                     let colPreSet = fixedHeaderData[key]; 
                     let colData = data[key] || '';
@@ -238,12 +238,14 @@ let workerConfig = [
                      //分片,10项为一片
                     let partLen = 10;
                     let partIndex = parseInt(i / partLen);
+                    
                     tmpData[partIndex] = tmpData[partIndex] == undefined ? {} : tmpData[partIndex];
                     if(i % partLen === 0){
                         tmpData[partIndex].startX = startX;                   
-                    }else if(i % partLen == partLen - 1){
+                    }else if(i % partLen == partLen - 1){                        
                         tmpData[partIndex].endX = endX;                   
-                    }                                                           
+                    };
+                                                      
                     tmpData[partIndex].children = tmpData[partIndex].children == undefined ? {} : tmpData[partIndex].children;                                     
                     tmpData[partIndex].children[i] = {
                         rowIndex: index,                        
@@ -258,6 +260,8 @@ let workerConfig = [
                         paneHeight: bodyPaneHeight * ratio,
                         info: colData                    
                     }
+                    //reset selfStartX
+                    selfStartX = endX;
                 }
                 fixedBodyData.push(tmpData)
             })

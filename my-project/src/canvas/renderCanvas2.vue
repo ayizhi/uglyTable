@@ -230,10 +230,13 @@ class AcrossLine{
             t.worker.postMessage('dealFixedData',[t.dataHeaders,headerOptions])
             .then((leftHeaderData) => {
                 console.log(leftHeaderData,'---')
+                t.fixedLeftUpData = leftHeaderData.fixedLeftUpData;
+                
                 //左下
                 t.worker.postMessage('dealIndexData',[t.dataBody,leftHeaderData.fixedLeftUpData,bodyOptions])
                 .then((leftBodyData) => {
                     console.log(leftBodyData,'---|---')
+                    t.fixedLeftIndexData = leftBodyData.fixedLeftIndexData;
                 })
             })
 
@@ -241,10 +244,12 @@ class AcrossLine{
             t.worker.postMessage('dealHeaderData',[t.dataHeaders,headerOptions])
             .then((rightHeaderData) => {
                 console.log(rightHeaderData,'===')
+                t.fixedHeaderData = rightHeaderData.fixedHeaderData;
                 //右下
                 t.worker.postMessage('dealBodyData',[t.dataBody,rightHeaderData.fixedHeaderData,bodyOptions])
                 .then((rightBodyData) => {
-                    console.log(rightBodyData,'===|===')
+                    console.log(rightBodyData,'===|===');
+                    t.fixedBodyData = rightBodyData.fixedBodyData;
                 })
             })
 
@@ -321,152 +326,6 @@ class AcrossLine{
             },
             //============================ event end ==========================
 
-
-            //============================ 数据处理 start ========================
-            // //处理左上固定块数据
-            // dealFixedData(){
-            //     const t = this;
-            //     let fixedList = [{
-            //         field: 'table_index',
-            //         fieldName: '',
-            //     }];
-
-            //     if(t.fixedColumnsLeft != 0){
-            //         t.dataHeaders.slice(0, t.fixedColumnsLeft).map((d) => {
-            //             fixedList.push(d)
-            //         })
-            //     };
-
-            //     //总长度，主要是画canvas时计算
-            //     let headerLen = fixedList.length;
-            //     let selfStartX = 0;
-            //     let selfStartY = 0;
-            
-            //     fixedList.map((fixedItem,index) => {
-            //         let field = fixedItem.field;
-            //         let fieldName = fixedItem.fieldName;
-            //         let paneWidth = fieldName.length * 30;
-            //         let dataType = fixedItem.dataType;
-            //         let isFixed = fixedItem.isFixed;
-
-            //         //开头的空格
-            //         if(field == 'table_index' && fieldName == ''){
-            //             let paneWidth =  30 * 2;
-            //             t.fixedLeftUpData[field] = {
-            //                 field: field,
-            //                 index: index,
-            //                 type: 'header',  
-            //                 headerLen: headerLen,                                                                              
-            //                 paneWidth: paneWidth * t.ratio,
-            //                 paneHeight: t.headerPaneHeight * t.ratio,
-            //                 info: fieldName
-            //             };
-                       
-            //             selfStartX += paneWidth * t.ratio;                            
-            //             return;        
-            //         }
-
-
-            //         t.fixedLeftUpData[field] = {
-            //             field: field,                        
-            //             index: index,
-            //             type: 'header',    
-            //             headerLen: headerLen,                                            
-            //             paneWidth: paneWidth * t.ratio ,
-            //             paneHeight: t.headerPaneHeight * t.ratio,
-            //             info: fieldName
-            //         };
-            //         selfStartX += paneWidth * t.ratio;                            
-            //     }) 
-                
-            //     return selfStartX;
-            // },
-
-            // //处理表头，也就是右上的数据
-            // dealHeaderData(){
-            //     const t = this;
-
-            //     let currentHeaders = t.dataHeaders.slice(t.fixedColumnsLeft);
-
-            //     //处理后的数据
-            //     let headerLen = currentHeaders.length;
-            //     let selfStartX = 0;
-            //     let selfStartY = 0;
-            
-            //     //表头
-            //     currentHeaders.map((header,index) => {
-            //         let field = header.field;
-            //         let fieldName = header.fieldName;
-            //         let paneWidth = fieldName.length * 30;
-            //         let dataType = header.dataType;
-            //         let isFixed = header.isFixed
-            //         t.fixedHeaderData[field] = {
-            //             index: index,
-            //             field: field,                                                
-            //             type: 'header',  
-            //             headerLen: headerLen,                                              
-            //             paneWidth: paneWidth * t.ratio ,
-            //             paneHeight: t.headerPaneHeight * t.ratio,
-            //             info: fieldName
-            //         };
-            //         selfStartX += paneWidth * t.ratio;  
-            //     })
-
-            //     return selfStartX
-            // },
-
-            // //画左下
-            // dealIndexData(){
-            //     const t = this;
-            //     t.dataBody.map((data,index) => {
-            //         let tmpData = {};
-            //         Object.keys(t.fixedLeftUpData).map((key) => {
-            //             let colPreSet = t.fixedLeftUpData[key];
-            //             let colData = data[key] || '';
-            //             let i = colPreSet.index;
-            //             tmpData[i] = {
-            //                 field: key,
-            //                 rowIndex: index,
-            //                 type: 'body',  
-            //                 index: i,                                                                                  
-            //                 paneWidth: colPreSet.paneWidth ,
-            //                 paneHeight: t.bodyPaneHeight * t.ratio,
-            //                 info: key == 'table_index' ? index + 1 : colData                     
-            //             }
-            //         })
-            //         t.fixedLeftIndexData.push(tmpData)
-            //     })
-            // },
-
-            // //画右下
-            // dealBodyData(){
-            //     const t = this;
-            //     t.dataBody.map((data,index) => {
-            //         let tmpData = {};
-            //         let allWidth = 0;
-
-            //         Object.keys(t.fixedHeaderData).map((key) => {
-            //             let colPreSet = t.fixedHeaderData[key]; 
-            //             let colData = data[key] || '';
-            //             let i = colPreSet.index;
-
-            //             tmpData[i] = {
-            //                 field: key,
-            //                 rowIndex: index,
-            //                 type: 'body',   
-            //                 index: i,                                                                                 
-            //                 paneWidth: colPreSet.paneWidth ,
-            //                 paneHeight: t.bodyPaneHeight * t.ratio,
-            //                 info: colData                    
-            //             }
-            //             allWidth += colPreSet.paneWidth  
-            //         })
-            //         t.fixedBodyData.push(tmpData)
-            //     })
-            // },
-
-            //============================ 数据处理 end ========================
-            
             
             //============================ 绘制 start =========================
 
