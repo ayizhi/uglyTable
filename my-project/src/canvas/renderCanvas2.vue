@@ -183,22 +183,27 @@ class AcrossLine{
                 fixedLeftIndexData: [],//下在x方向上固定的index列
                 fixedBodyData: [],//经过处理后的body数据
 
-                //canvas容器
-                fixedCanvasList: [],//左上角固定不动的
-                headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图                
-                indexCanvasList: [],//左下在x方向上固定的index列
-                bodyCanvasList: [],//表身canvas组
+                // //canvas容器
+                // fixedCanvasList: [],//左上角固定不动的
+                // headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图                
+                // indexCanvasList: [],//左下在x方向上固定的index列
+                // bodyCanvasList: [],//表身canvas组
 
                 //location
                 startX: 0,
                 startY: 0,
                 leftMaxWidth: 0,
                 rightMaxWidth: 0,
-
-
+                
                 //cell canvas cache
                 headerCanvasBgCache: {},
-                bodyCanvasBgCache: {}
+                bodyCanvasBgCache: {},
+
+                //拖拽           
+                downBorder: 0,
+                rightBorder: 0,
+
+
 
             }
         },
@@ -278,10 +283,9 @@ class AcrossLine{
                 let dragStartY = 0;
                 let dragStartX = 0;
                 let canvas = document.querySelector('#' + t.id)
-                var downBorder = (-t.dataBody.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
-                var rightBorder = -t.rightMaxWidth - t.leftMaxWidth + t.width * t.ratio
-                
-                console.log(rightBorder)
+
+                //底边界
+                t.downBorder = (-t.dataBody.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
 
                 document.onmousedown = (e) => {
                     console.log('down')                
@@ -302,12 +306,11 @@ class AcrossLine{
                         if(tmpY <= 0){
                             t.startY = tmpY
                             dragStartY = e.clientY
-                     
                         }
 
                         //滚到最下面
-                        if(t.startY < downBorder){
-                            t.startY = downBorder;
+                        if(t.startY < t.downBorder){
+                            t.startY = t.downBorder;
                         }   
                     }
 
@@ -319,14 +322,16 @@ class AcrossLine{
                         if(tmpX <= 0){
                             t.startX = tmpX                    
                             dragStartX = e.clientX
-                            console.log('startX:  ',t.startX,'-------------------')
                         }
 
-                        //滚到头
-                        if(t.startX < rightBorder){
-                            console.log(111)
-                            t.startX = rightBorder;
-                        }
+                        //滚到头,因为这个右边最大宽度是异步获取的
+                        if(t.rightMaxWidth){
+                            //缓存
+                            t.rightBorder = t.rightBorder == 0 ? (-t.rightMaxWidth - t.leftMaxWidth + t.width * t.ratio) : t.rightBorder
+                            if(t.startX < t.rightBorder){
+                                t.startX = t.rightBorder;
+                            }   
+                       }
                     }
                 }
 
@@ -350,7 +355,7 @@ class AcrossLine{
                 let tWidth = obj.paneWidth;
                 let tHeight = obj.paneHeight;
 
-
+                //缓存
                 if(t.headerCanvasBgCache[field] == undefined){
                     let bgCanvas = document.createElement('canvas');
                     let bgCtx = bgCanvas.getContext('2d');
@@ -419,7 +424,7 @@ class AcrossLine{
                 canvas.width = tWidth;
                 canvas.height = tHeight;
 
-
+                //缓存
                 if(t.bodyCanvasBgCache[field] == undefined){
                     let bgCanvas = document.createElement('canvas');
                     let bgCtx = bgCanvas.getContext('2d');
@@ -491,9 +496,60 @@ class AcrossLine{
                 let startIndex = Math.floor(upY / (t.bodyPaneHeight * t.ratio))
                 let endIndex = Math.ceil(downY / (t.bodyPaneHeight * t.ratio))
 
+                //画主body,分片
+                t.fixedBodyData.map((item,index) => {
+                    if(index < startIndex || index > endIndex) return;
+                    Object.keys(item).map((key) => {
+                        let cellPa = item[key];
+                        let startX = cellPa.startX;
+                        let endX = cellPa.endX;
+                        if(startX > rightX || endX < leftX) return;
+
+                        let children = cellPa.children;
+                        Object.keys(children).map((cellIndex) => {
+                            let cell = children[cellIndex];
+                            if(cell.startX > rightX || cell.endX < leftX) return;
+
+                            let c = t.drawBodyPane({
+                                field: cell.field,
+                                type: 'body',
+                                index: cell.index,
+                                headerLen: cell.headerLen,
+                                paneWidth: cell.paneWidth,
+                                paneHeight: t.bodyPaneHeight * t.ratio ,
+                                info: cell.info
+                            })
+                            t.ctx.drawImage(c,
+                                cell.startX + t.startX + t.leftMaxWidth ,
+                                cell.startY + t.startY + t.headerPaneHeight * t.ratio,
+                            ) 
+                        })
+                    })
+                })
 
 
+                // //不分片的body
+                // t.fixedBodyData.map((item,index) => {
+                //     if(index < startIndex || index > endIndex) return;
+                //     for(let key in item){
+                //         let cell = item[key];
+                //         let c = t.drawBodyPane({
+                //             field: cell.field,
+                //             type: 'body',
+                //             index: cell.index,
+                //             headerLen: cell.headerLen,
+                //             paneWidth: cell.paneWidth,
+                //             paneHeight: t.bodyPaneHeight * t.ratio ,
+                //             info: cell.info
+                //         })
+                //         t.ctx.drawImage(c,
+                //             cell.startX + t.startX + t.leftMaxWidth ,
+                //             cell.startY + t.startY + t.headerPaneHeight * t.ratio,
+                //         ) 
+                //     }
+                // })
                 
+
 
                 //leftIndex
                 t.fixedLeftIndexData.map((item,index) => {
@@ -516,32 +572,27 @@ class AcrossLine{
                     }
                 })
 
-                // console.log(leftX,rightX)
 
                 //画右边头部
-                // for(let key in t.fixedHeaderData){
-                //     let cell = t.fixedHeaderData[key];
+                for(let key in t.fixedHeaderData){
+                    let cell = t.fixedHeaderData[key];
+                    if(cell.startX > rightX || cell.endX < leftX){
+                        continue;
+                    }
+                    let c = t.drawHeaderPane({
+                        field: cell.field,
+                        type: 'header',
+                        index: cell.index,
+                        headerLen: cell.headerLen,
+                        paneWidth: cell.paneWidth,
+                        paneHeight: t.headerPaneHeight * t.ratio ,
+                        info: cell.info
+                    })
+                    t.ctx.drawImage(c,
+                         cell.startX + t.startX + t.leftMaxWidth , cell.startY, cell.paneWidth,t.headerPaneHeight * t.ratio
+                    ) 
+                }
 
-                //     if(cell.startX > rightX || cell.endX < leftX){
-                //         return;
-                //     }
-
-                //     let c = t.drawHeaderPane({
-                //         field: cell.field,
-                //         type: 'header',
-                //         index: cell.index,
-                //         headerLen: cell.headerLen,
-                //         paneWidth: cell.paneWidth,
-                //         paneHeight: t.headerPaneHeight * t.ratio ,
-                //         info: cell.info
-                //     })
-
-                //     t.ctx.drawImage(c,
-                //         0,0,cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio,
-                //         // cell.startX + t.startX + t.fixedLeftUpData , cell.startY, cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio
-                //          cell.startX + t.startX , cell.startY, cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio
-                //     ) 
-                // }
 
                 //画固定头部left up
                 for(let key in t.fixedLeftUpData){
@@ -557,8 +608,7 @@ class AcrossLine{
                     })
 
                     t.ctx.drawImage(c,
-                        0,0,cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio,
-                        cell.startX, cell.startY, cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio
+                        cell.startX, cell.startY, cell.paneWidth,t.headerPaneHeight * t.ratio
                     ) 
                 }
             },

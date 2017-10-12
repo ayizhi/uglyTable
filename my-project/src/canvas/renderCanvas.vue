@@ -247,6 +247,8 @@ class AcrossLine{
                 var rightBorder = -t.rightMaxWidth - t.leftMaxWidth + t.width * t.ratio
                 
 
+                console.log(t.leftMaxWidth,t.rightMaxWidth,rightBorder)
+
                 document.onmousedown = (e) => {
                     console.log('down')                
                     
