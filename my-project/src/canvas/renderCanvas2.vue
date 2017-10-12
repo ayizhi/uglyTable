@@ -194,6 +194,12 @@ class AcrossLine{
                 startY: 0,
                 leftMaxWidth: 0,
                 rightMaxWidth: 0,
+
+
+                //cell canvas cache
+                headerCanvasBgCache: {},
+                bodyCanvasBgCache: {}
+
             }
         },
 
@@ -292,6 +298,7 @@ class AcrossLine{
                         if(tmpY <= 0){
                             t.startY = tmpY
                             dragStartY = e.clientY
+                     
                         }
 
                         //滚到最下面
@@ -308,6 +315,7 @@ class AcrossLine{
                         if(tmpX <= 0){
                             t.startX = tmpX                    
                             dragStartX = e.clientX
+                            console.log('startY:  ',t.startY,'-------------------')
                         }
 
                         //滚到头
@@ -328,40 +336,121 @@ class AcrossLine{
             
             //============================ 绘制 start =========================
 
-            //绘制每个单元格
-            drawPane(obj){
+            //绘制每个header单元格
+            drawHeaderPane(obj){
                 const t = this;
-                let canvas = document.createElement('canvas');
-                let ctx = canvas.getContext('2d');
+                let field = obj.field;
+                let type = obj.type;
                 let info = obj.info;
                 let tWidth = obj.paneWidth;
                 let tHeight = obj.paneHeight;
-                canvas.width = tWidth;
-                canvas.height = tHeight;
 
-                ctx.fillStyle = "#fff";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                ctx.drawImage(t.acrossLine,
+                if(t.headerCanvasBgCache[field] == undefined){
+                    let bgCanvas = document.createElement('canvas');
+                    let bgCtx = bgCanvas.getContext('2d');
+                    bgCanvas.width = tWidth;
+                    bgCanvas.height = tHeight;
+
+                    bgCtx.fillStyle = "#fff";
+                    bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+                    bgCtx.drawImage(t.acrossLine,
                     0,
                     tHeight - 1,
                     tWidth,
                     1);
-                
-                if(obj.index != 0){
-                    ctx.drawImage(t.verticalLine,
+
+                    if(obj.index != 0){
+                        bgCtx.drawImage(t.verticalLine,
                         0,
                         0,
                         1,
                         tHeight)
-                };
-                if(obj.index == obj.headerLen - 1){                 
-                    ctx.drawImage(t.verticalLine,
+                    };
+                    if(obj.index == obj.headerLen - 1){                 
+                        bgCtx.drawImage(t.verticalLine,
                         tWidth - 1,
                         0,
                         1,
                         tHeight)
+                    }                    
+
+                    //text default color
+                    bgCtx.font = t.fontSize * t.ratio + 'px Arif';
+                    if(obj.type == 'header'){
+                        bgCtx.fillStyle = '#9e9ea6';
+                    }else{
+                        bgCtx.fillStyle = '#555459';
+                    }
+
+                    bgCtx.textAlign = t.textAglin;    //start, end, left, right or center
+                    bgCtx.textBaseline = 'middle';
+                    if(t.textAglin == 'center'){
+                        bgCtx.fillText(obj.info,tWidth/2,tHeight/2)
+                    }else if(t.textAglin == 'left'){
+                        bgCtx.fillText(obj.info,t.padding,tHeight/2)                   
+                    }
+
+                    t.headerCanvasBgCache[field] = bgCanvas
                 }
+
+                let cellCanvas = t.headerCanvasBgCache[field];    
+
+                return cellCanvas  
+            },
+
+            //绘制每个body
+            drawBodyPane(obj){
+                const t = this;
+                let field = obj.field;
+                let type = obj.type;
+                let info = obj.info;
+                let tWidth = obj.paneWidth;
+                let tHeight = obj.paneHeight;
+
+                let canvas = document.createElement('canvas');
+                let ctx = canvas.getContext('2d');
+                canvas.width = tWidth;
+                canvas.height = tHeight;
+
+
+                if(t.bodyCanvasBgCache[field] == undefined){
+                    let bgCanvas = document.createElement('canvas');
+                    let bgCtx = bgCanvas.getContext('2d');
+                    bgCanvas.width = tWidth;
+                    bgCanvas.height = tHeight;
+
+                    bgCtx.fillStyle = "#fff";
+                    bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+                    bgCtx.drawImage(t.acrossLine,
+                    0,
+                    tHeight - 1,
+                    tWidth,
+                    1);
+
+                    if(obj.index != 0){
+                        bgCtx.drawImage(t.verticalLine,
+                        0,
+                        0,
+                        1,
+                        tHeight)
+                    };
+                    if(obj.index == obj.headerLen - 1){                 
+                        bgCtx.drawImage(t.verticalLine,
+                        tWidth - 1,
+                        0,
+                        1,
+                        tHeight)
+                    }
+
+                    t.bodyCanvasBgCache[field] = bgCanvas
+                }
+                
+                let cellCanvas = t.bodyCanvasBgCache[field];    
+
+                ctx.drawImage(cellCanvas,0,0)
 
                 //text default color
                 ctx.font = t.fontSize * t.ratio + 'px Arif';
@@ -370,25 +459,74 @@ class AcrossLine{
                 }else{
                     ctx.fillStyle = '#555459';
                 }
-                
+
                 ctx.textAlign = t.textAglin;    //start, end, left, right or center
                 ctx.textBaseline = 'middle';
                 if(t.textAglin == 'center'){
                     ctx.fillText(obj.info,tWidth/2,tHeight/2)
                 }else if(t.textAglin == 'left'){
-                    ctx.fillText(obj.info,t.padding,tHeight/2)
+                    ctx.fillText(obj.info,t.padding,tHeight/2)                   
                 }
-
+        
                 return canvas  
             },
+
 
             //============================ 绘制 end ==========================
 
             render(){
                 const t = this;
-                let realStartX = 0;
+                let leftX = t.startX ;
+                let rightX = t.startX + t.width * t.ratio;
+                let upY = -t.startY;
+                let downY = -t.startY + t.height * t.ratio - t.headerPaneHeight * t.ratio;
 
-                t.fixedLeftUpData.map(() => {})
+                //确定所有y轴上要显示的index
+                let startIndex = Math.floor(upY / (t.bodyPaneHeight * t.ratio))
+                let endIndex = Math.ceil(downY / (t.bodyPaneHeight * t.ratio))
+
+                //leftIndex
+                t.fixedLeftIndexData.map((item,index) => {
+                    if(index < startIndex || index > endIndex) return;
+                
+                    for(let key in item){
+                        let cell = item[key];
+                        let c = t.drawBodyPane({
+                            field: cell.field,
+                            type: 'body',
+                            index: cell.index,
+                            headerLen: cell.headerLen,
+                            paneWidth: cell.paneWidth,
+                            paneHeight: t.bodyPaneHeight * t.ratio ,
+                            info: cell.info
+                        })
+                        t.ctx.drawImage(c,
+                            cell.startX, cell.startY + t.startY + t.headerPaneHeight * t.ratio
+                        ) 
+                    }
+                })
+
+
+
+                //画固定头部
+                for(let key in t.fixedLeftUpData){
+                    let cell = t.fixedLeftUpData[key];
+                    let c = t.drawHeaderPane({
+                        field: cell.field,
+                        type: 'header',
+                        index: cell.index,
+                        headerLen: cell.headerLen,
+                        paneWidth: cell.paneWidth,
+                        paneHeight: t.headerPaneHeight * t.ratio ,
+                        info: cell.info
+                    })
+
+
+                    t.ctx.drawImage(c,
+                        0,0,cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio,
+                        cell.startX, cell.startY, cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio
+                    ) 
+                }
 
                 
 

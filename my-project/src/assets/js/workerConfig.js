@@ -34,7 +34,9 @@ let workerConfig = [
             //header长度的配置
             let headerLengthConfig = {
                 table_index: 2,
-                mobile: 11,
+                gender: 2,
+                name: 4,
+                mobile: 4,
             }
 
             fixedList.map((fixedItem,index) => {
@@ -98,7 +100,9 @@ let workerConfig = [
             //header长度的配置
             let headerLengthConfig = {
                 table_index: 2,
-                mobile: 11,
+                gender: 2,
+                name: 4,
+                mobile: 4,
             }
 
             //表头
@@ -107,7 +111,7 @@ let workerConfig = [
                 let fieldName = header.fieldName;
                 let paneWidth = headerLengthConfig[field] * 30 || fieldName.length * 30;                
                 let dataType = header.dataType;
-                let isFixed = header.isFixed;
+                let isFixed = header.isFixed; //todo ??                
 
                 //position
                 let startX = selfStartX;
@@ -161,14 +165,17 @@ let workerConfig = [
                 let key;
 
                 selfStartX = 0;
-                selfStartY = index * bodyPaneHeight * ratio
+                selfStartY = index * bodyPaneHeight * ratio;
+    
+            
 
                 for(key in fixedLeftUpData){
                     let colPreSet = fixedLeftUpData[key];
                     let colData = data[key] || '';
                     let i = colPreSet.index;
                     let paneWidth = colPreSet.paneWidth;
-
+                    let headerLen = colPreSet.headerLen;
+                    
                     //position
                     let startX = selfStartX;
                     let endX = selfStartX + paneWidth;
@@ -183,7 +190,8 @@ let workerConfig = [
                         endX,
                         startY,
                         endY,
-                        index: i,                                                                                  
+                        index: i,   
+                        headerLen: headerLen,                                                                  
                         paneWidth: paneWidth,
                         paneHeight: bodyPaneHeight * ratio,
                         info: key == 'table_index' ? index + 1 : colData                     
@@ -228,6 +236,7 @@ let workerConfig = [
                     let colData = data[key] || '';
                     let i = colPreSet.index;
                     let paneWidth = colPreSet.paneWidth;
+                    let headerLen = colPreSet.headerLen;                
                     
                     //position
                     let startX = selfStartX;
@@ -255,7 +264,8 @@ let workerConfig = [
                         endX,
                         startY,
                         endY, 
-                        index: i,                                                                                 
+                        index: i,    
+                        headerLen: headerLen,                                                              
                         paneWidth: paneWidth ,
                         paneHeight: bodyPaneHeight * ratio,
                         info: colData                    
