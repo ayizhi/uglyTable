@@ -246,7 +246,7 @@ let workerConfig = [
                     let endY = startY + bodyPaneHeight * ratio;
 
                      //分片,10项为一片
-                    let partLen = 6;
+                    let partLen = 7;
                     let partIndex = parseInt(i / partLen);
                     
                     tmpData[partIndex] = tmpData[partIndex] == undefined ? {} : tmpData[partIndex];
