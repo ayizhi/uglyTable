@@ -211,8 +211,6 @@ class AcrossLine{
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
 
-            console.log(666)
-
             //headerOptions
             let headerOptions = {
                 fixedColumnsLeft: t.fixedColumnsLeft,
@@ -326,6 +324,7 @@ class AcrossLine{
             },
             //============================ event end ==========================
 
+
             
             //============================ 绘制 start =========================
 
@@ -383,154 +382,13 @@ class AcrossLine{
                 return canvas  
             },
 
-            //画每行
-            drawRow(tableRowData,type,maxWidth){
-                const t = this;
-
-                let rowCanvasList = [];
-                //google 浏览器canvas的最大宽度为32766px
-                let splitLen = 10000                
-                //所以我们需要的最小canvas数为
-                let minCanNum = parseInt(maxWidth / splitLen) + 1;
-                let i;
-                //区分group
-                for(i = 0 ; i < minCanNum ; i ++){
-                    let canvas = document.createElement('canvas');
-                    canvas.width = splitLen;
-                    canvas.height = type == 'body' ? t.bodyPaneHeight * t.ratio : t.headerPaneHeight * t.ratio;
-                    
-                    rowCanvasList[i] = {
-                        canvas: canvas,
-                        start: i * splitLen,
-                        end: (i+1) * splitLen,
-                        realStart:  (i+1) * splitLen,
-                        realEnd: i * splitLen,
-                        index: i,
-                        splitLen: splitLen
-                    }
-                }
-
-
-                let ctxList = {};
-                //为了防止新开的一个group的初始x小于0
-                let fillX = 0;
-                let startX = 0;
-                let startY = 0;
-                Object.keys(tableRowData).map((key,index) => {
-                    let pane = tableRowData[key];
-                    let hc = pane.paneCanvas;
-                    let x = startX;
-                    let y = startY;
-                    let w = pane.paneWidth;
-                    let h = pane.paneHeight;
-
-                    //属于哪个group
-                    let i = parseInt((startX + pane.paneWidth) / splitLen);
-
-                    startX += pane.paneWidth
-
-                    let rowCanvas = rowCanvasList[i];
-                    let canvas = rowCanvas.canvas;
-
-                    if(ctxList[i] == undefined){//说明刚建立
-                        ctxList[i] = canvas.getContext('2d');
-                        //判断初始是小于零
-                        let rx = x - rowCanvas.start;
-                        rx < 0 && (fillX = Math.abs(rx))
-                    }
-
-                    let ctx = ctxList[i]
-
-                    //x需要减去前一个档
-                    let rX = x - rowCanvas.start;
-                    ctx.drawImage(hc,rX + fillX,y,w,h);
-
-                    //标记realStart & realEnd
-                    x < rowCanvas.realStart && (rowCanvas.realStart = x); 
-                    (x + pane.paneWidth) > rowCanvas.realEnd && (rowCanvas.realEnd = x + pane.paneWidth);
-                })
-
-                return rowCanvasList;
-            },
-
             //============================ 绘制 end ==========================
 
             render(){
                 const t = this;
                 let realStartX = 0;
 
-                //main body
-                t.bodyCanvasList.map((cList,index) => {
-                    cList.map((cObj,i) => {
-                        if(i == 0){
-                            realStartX = 0
-                        } 
-                        //the 9 params
-                        let c = cObj.canvas;
-                        let startX = cObj.realStart - cObj.start;
-                        let width = cObj.realEnd - cObj.realStart;
-                        let startY = t.startY + (index * t.bodyPaneHeight + t.headerPaneHeight) * t.ratio
-
-                        if(startX > t.canvas.width || startX + width < 0 || width < t.startX + t.canvas.width) return;
-                        if (startY > t.canvas.height || startY + t.bodyPaneHeight * t.ratio < 0) return;
-
-
-                        t.ctx.drawImage(c,
-                            0,0,width,c.height,
-                            cObj.realStart + t.startX + t.leftMaxWidth, startY ,width,c.height
-                        )          
-                    })
-                })
-
-                //header
-                t.headerCanvasList.map((cObj,index) => {
-                    if(index == 0){
-                        realStartX = 0
-                    } 
-                    //the 9 params
-                    let c = cObj.canvas;
-                    let startX = cObj.realStart - cObj.start;
-                    let width = cObj.realEnd - cObj.realStart;
-
-                    if(startX > t.canvas.width || startX + width < 0) return;
-
-                    t.ctx.drawImage(c,
-                        0,0,width,c.height,
-                        cObj.realStart + t.startX + t.leftMaxWidth,0,width,c.height
-                    )    
-                });
-
-                //渲染index
-                t.indexCanvasList.map((cList,index) => {
-                     cList.map((cObj,i) => {
-                        //the 9 params
-                        let c = cObj.canvas;
-                        let startX = cObj.realStart - cObj.start;
-                        let width = cObj.realEnd - cObj.realStart;
-                        let startY = t.startY + (index * t.bodyPaneHeight + t.headerPaneHeight) * t.ratio
-
-                        if (startY > t.canvas.height || startY + t.bodyPaneHeight * t.ratio < 0) return;
-
-                        t.ctx.drawImage(c,
-                            0,0,width,c.height,
-                            0, startY ,width,c.height
-                        )          
-                    }) 
-                })
-
-                //渲染固定头
-                t.fixedCanvasList.map((cObj,index) => {
-                    if(index == 0){
-                        realStartX = 0
-                    } 
-                    let c = cObj.canvas;  
-                    let width = cObj.realEnd - cObj.realStart;
-                                      
-                    t.ctx.drawImage(c,
-                        0,0,width,c.height,
-                        0,0,width,c.height
-                    )  
-                })
+                
 
                 
             },
