@@ -388,6 +388,8 @@ class AcrossLine{
                 const t = this;
                 let realStartX = 0;
 
+                t.fixedLeftUpData.map(() => {})
+
                 
 
                 
