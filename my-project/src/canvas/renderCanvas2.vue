@@ -235,6 +235,7 @@ class AcrossLine{
             .then((leftHeaderData) => {
                 console.log(leftHeaderData,'---')
                 t.fixedLeftUpData = leftHeaderData.fixedLeftUpData;
+                t.leftMaxWidth = leftHeaderData.width;
                 
                 //左下
                 t.worker.postMessage('dealIndexData',[t.dataBody,leftHeaderData.fixedLeftUpData,bodyOptions])
@@ -249,6 +250,8 @@ class AcrossLine{
             .then((rightHeaderData) => {
                 console.log(rightHeaderData,'===')
                 t.fixedHeaderData = rightHeaderData.fixedHeaderData;
+                t.rightMaxWidth = rightHeaderData.width;
+                
                 //右下
                 t.worker.postMessage('dealBodyData',[t.dataBody,rightHeaderData.fixedHeaderData,bodyOptions])
                 .then((rightBodyData) => {
@@ -278,6 +281,7 @@ class AcrossLine{
                 var downBorder = (-t.dataBody.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
                 var rightBorder = -t.rightMaxWidth - t.leftMaxWidth + t.width * t.ratio
                 
+                console.log(rightBorder)
 
                 document.onmousedown = (e) => {
                     console.log('down')                
@@ -315,11 +319,12 @@ class AcrossLine{
                         if(tmpX <= 0){
                             t.startX = tmpX                    
                             dragStartX = e.clientX
-                            console.log('startY:  ',t.startY,'-------------------')
+                            console.log('startX:  ',t.startX,'-------------------')
                         }
 
                         //滚到头
                         if(t.startX < rightBorder){
+                            console.log(111)
                             t.startX = rightBorder;
                         }
                     }
@@ -476,14 +481,19 @@ class AcrossLine{
 
             render(){
                 const t = this;
-                let leftX = t.startX ;
-                let rightX = t.startX + t.width * t.ratio;
+                let leftX = -t.startX ;
+                let rightX = -t.startX + t.width * t.ratio;
                 let upY = -t.startY;
                 let downY = -t.startY + t.height * t.ratio - t.headerPaneHeight * t.ratio;
+
 
                 //确定所有y轴上要显示的index
                 let startIndex = Math.floor(upY / (t.bodyPaneHeight * t.ratio))
                 let endIndex = Math.ceil(downY / (t.bodyPaneHeight * t.ratio))
+
+
+
+                
 
                 //leftIndex
                 t.fixedLeftIndexData.map((item,index) => {
@@ -506,9 +516,34 @@ class AcrossLine{
                     }
                 })
 
+                // console.log(leftX,rightX)
 
+                //画右边头部
+                // for(let key in t.fixedHeaderData){
+                //     let cell = t.fixedHeaderData[key];
 
-                //画固定头部
+                //     if(cell.startX > rightX || cell.endX < leftX){
+                //         return;
+                //     }
+
+                //     let c = t.drawHeaderPane({
+                //         field: cell.field,
+                //         type: 'header',
+                //         index: cell.index,
+                //         headerLen: cell.headerLen,
+                //         paneWidth: cell.paneWidth,
+                //         paneHeight: t.headerPaneHeight * t.ratio ,
+                //         info: cell.info
+                //     })
+
+                //     t.ctx.drawImage(c,
+                //         0,0,cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio,
+                //         // cell.startX + t.startX + t.fixedLeftUpData , cell.startY, cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio
+                //          cell.startX + t.startX , cell.startY, cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio
+                //     ) 
+                // }
+
+                //画固定头部left up
                 for(let key in t.fixedLeftUpData){
                     let cell = t.fixedLeftUpData[key];
                     let c = t.drawHeaderPane({
@@ -521,17 +556,14 @@ class AcrossLine{
                         info: cell.info
                     })
 
-
                     t.ctx.drawImage(c,
                         0,0,cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio,
                         cell.startX, cell.startY, cell.paneWidth * t.ratio,t.headerPaneHeight * t.ratio
                     ) 
                 }
-
-                
-
-                
             },
+
+
 
             run(){
                 const t = this;
