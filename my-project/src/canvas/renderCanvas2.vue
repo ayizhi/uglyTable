@@ -196,7 +196,8 @@ class AcrossLine{
                 rightMaxWidth: 0,
                 
                 //cell canvas cache
-                headerCanvasBgCache: {},
+                headerCanvasCache: {},
+                bodyCanvasCache: {},
                 bodyCanvasBgCache: {},
 
                 //拖拽           
@@ -356,7 +357,7 @@ class AcrossLine{
                 let tHeight = obj.paneHeight;
 
                 //缓存
-                if(t.headerCanvasBgCache[field] == undefined){
+                if(t.headerCanvasCache[field] == undefined){
                     let bgCanvas = document.createElement('canvas');
                     let bgCtx = bgCanvas.getContext('2d');
                     bgCanvas.width = tWidth;
@@ -402,10 +403,10 @@ class AcrossLine{
                         bgCtx.fillText(obj.info,t.padding,tHeight/2)                   
                     }
 
-                    t.headerCanvasBgCache[field] = bgCanvas
+                    t.headerCanvasCache[field] = bgCanvas
                 }
 
-                let cellCanvas = t.headerCanvasBgCache[field];    
+                let cellCanvas = t.headerCanvasCache[field];    
 
                 return cellCanvas  
             },
@@ -416,69 +417,79 @@ class AcrossLine{
                 let field = obj.field;
                 let type = obj.type;
                 let info = obj.info;
+                let index = obj.index;//列index
+                let rowIndex = obj.rowIndex;//行index
                 let tWidth = obj.paneWidth;
                 let tHeight = obj.paneHeight;
 
-                let canvas = document.createElement('canvas');
-                let ctx = canvas.getContext('2d');
-                canvas.width = tWidth;
-                canvas.height = tHeight;
+                //body单元格cache
+                t.bodyCanvasCache[rowIndex] = t.bodyCanvasCache[rowIndex] == undefined ? {} : t.bodyCanvasCache[rowIndex];
+                if(t.bodyCanvasCache[rowIndex][index] == undefined){
+                    let canvas = document.createElement('canvas');
+                    let ctx = canvas.getContext('2d');
+                    canvas.width = tWidth;
+                    canvas.height = tHeight;
 
-                //缓存
-                if(t.bodyCanvasBgCache[field] == undefined){
-                    let bgCanvas = document.createElement('canvas');
-                    let bgCtx = bgCanvas.getContext('2d');
-                    bgCanvas.width = tWidth;
-                    bgCanvas.height = tHeight;
+                    //缓存
+                    if(t.bodyCanvasBgCache[field] == undefined){
+                        let bgCanvas = document.createElement('canvas');
+                        let bgCtx = bgCanvas.getContext('2d');
+                        bgCanvas.width = tWidth;
+                        bgCanvas.height = tHeight;
 
-                    bgCtx.fillStyle = "#fff";
-                    bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+                        bgCtx.fillStyle = "#fff";
+                        bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
 
-                    bgCtx.drawImage(t.acrossLine,
-                    0,
-                    tHeight - 1,
-                    tWidth,
-                    1);
-
-                    if(obj.index != 0){
-                        bgCtx.drawImage(t.verticalLine,
+                        bgCtx.drawImage(t.acrossLine,
                         0,
-                        0,
-                        1,
-                        tHeight)
-                    };
-                    if(obj.index == obj.headerLen - 1){                 
-                        bgCtx.drawImage(t.verticalLine,
-                        tWidth - 1,
-                        0,
-                        1,
-                        tHeight)
+                        tHeight - 1,
+                        tWidth,
+                        1);
+
+                        if(index != 0){
+                            bgCtx.drawImage(t.verticalLine,
+                            0,
+                            0,
+                            1,
+                            tHeight)
+                        };
+                        if(index == obj.headerLen - 1){                 
+                            bgCtx.drawImage(t.verticalLine,
+                            tWidth - 1,
+                            0,
+                            1,
+                            tHeight)
+                        }
+
+                        t.bodyCanvasBgCache[field] = bgCanvas
+                    }
+                    
+                    let cellCanvas = t.bodyCanvasBgCache[field];    
+
+                    ctx.drawImage(cellCanvas,0,0)
+
+                    //text default color
+                    ctx.font = t.fontSize * t.ratio + 'px Arif';
+                    if(obj.type == 'header'){
+                        ctx.fillStyle = '#9e9ea6';
+                    }else{
+                        ctx.fillStyle = '#555459';
                     }
 
-                    t.bodyCanvasBgCache[field] = bgCanvas
-                }
-                
-                let cellCanvas = t.bodyCanvasBgCache[field];    
+                    ctx.textAlign = t.textAglin;    //start, end, left, right or center
+                    ctx.textBaseline = 'middle';
+                    if(t.textAglin == 'center'){
+                        ctx.fillText(obj.info,tWidth/2,tHeight/2)
+                    }else if(t.textAglin == 'left'){
+                        ctx.fillText(obj.info,t.padding,tHeight/2)                   
+                    }
 
-                ctx.drawImage(cellCanvas,0,0)
-
-                //text default color
-                ctx.font = t.fontSize * t.ratio + 'px Arif';
-                if(obj.type == 'header'){
-                    ctx.fillStyle = '#9e9ea6';
-                }else{
-                    ctx.fillStyle = '#555459';
+                    t.bodyCanvasCache[rowIndex][index] = canvas
                 }
 
-                ctx.textAlign = t.textAglin;    //start, end, left, right or center
-                ctx.textBaseline = 'middle';
-                if(t.textAglin == 'center'){
-                    ctx.fillText(obj.info,tWidth/2,tHeight/2)
-                }else if(t.textAglin == 'left'){
-                    ctx.fillText(obj.info,t.padding,tHeight/2)                   
-                }
+
         
-                return canvas  
+                return t.bodyCanvasCache[rowIndex][index]  
             },
 
 
@@ -513,7 +524,8 @@ class AcrossLine{
                             let c = t.drawBodyPane({
                                 field: cell.field,
                                 type: 'body',
-                                index: cell.index,
+                                index: cell.index,//列index
+                                rowIndex: index,//行index
                                 headerLen: cell.headerLen,
                                 paneWidth: cell.paneWidth,
                                 paneHeight: t.bodyPaneHeight * t.ratio ,
