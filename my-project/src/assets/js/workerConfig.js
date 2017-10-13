@@ -36,6 +36,7 @@ let workerConfig = [
                 table_index: 2,
                 gender: 2,
                 name: 4,
+                idcode: 6,
                 mobile: 4,
             }
 
@@ -102,6 +103,7 @@ let workerConfig = [
                 table_index: 2,
                 gender: 2,
                 name: 4,
+                idcode: 6,                
                 mobile: 4,
             }
 
@@ -276,51 +278,6 @@ let workerConfig = [
                 }
                 fixedBodyData.push(tmpData)
             })
-
-            
-            // //不分片
-            // dataBody.map((data,index) => {
-                
-            //     let tmpData = {};
-            //     let key;
-
-            //     selfStartX = 0;
-            //     selfStartY = index * bodyPaneHeight * ratio;
-
-            //     for(key in fixedHeaderData){
-            //         let colPreSet = fixedHeaderData[key];
-            //         let colData = data[key] || '';
-            //         let i = colPreSet.index;
-            //         let paneWidth = colPreSet.paneWidth;
-            //         let headerLen = colPreSet.headerLen;
-                    
-            //         //position
-            //         let startX = selfStartX;
-            //         let endX = selfStartX + paneWidth;
-            //         let startY = selfStartY;
-            //         let endY = startY + bodyPaneHeight * ratio;
-
-            //         tmpData[i] = {
-            //             rowIndex: index,                        
-            //             field: key,
-            //             type: 'body',  
-            //             startX,
-            //             endX,
-            //             startY,
-            //             endY,
-            //             index: i,   
-            //             headerLen: headerLen,                                                                  
-            //             paneWidth: paneWidth,
-            //             paneHeight: bodyPaneHeight * ratio,
-            //             info: key == 'table_index' ? index + 1 : colData                     
-            //         }
-            
-            //         //reset selfStartX
-            //         selfStartX = endX;
-            //     }
-            //     fixedBodyData.push(tmpData)
-            // })
-
 
             return {
                 fixedBodyData: fixedBodyData

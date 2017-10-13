@@ -424,7 +424,7 @@ class AcrossLine{
 
                 //body单元格cache
                 t.bodyCanvasCache[rowIndex] = t.bodyCanvasCache[rowIndex] == undefined ? {} : t.bodyCanvasCache[rowIndex];
-                if(t.bodyCanvasCache[rowIndex][index] == undefined){
+                if(t.bodyCanvasCache[rowIndex][field] == undefined){
                     let canvas = document.createElement('canvas');
                     let ctx = canvas.getContext('2d');
                     canvas.width = tWidth;
@@ -484,13 +484,14 @@ class AcrossLine{
                         ctx.fillText(obj.info,t.padding,tHeight/2)                   
                     }
 
-                    t.bodyCanvasCache[rowIndex][index] = canvas
+                    t.bodyCanvasCache[rowIndex][field] = canvas
                 }
 
 
         
-                return t.bodyCanvasCache[rowIndex][index]  
+                return t.bodyCanvasCache[rowIndex][field]  
             },
+
 
 
             //============================ 绘制 end ==========================
@@ -539,30 +540,6 @@ class AcrossLine{
                     })
                 })
 
-
-                // //不分片的body
-                // t.fixedBodyData.map((item,index) => {
-                //     if(index < startIndex || index > endIndex) return;
-                //     for(let key in item){
-                //         let cell = item[key];
-                //         let c = t.drawBodyPane({
-                //             field: cell.field,
-                //             type: 'body',
-                //             index: cell.index,
-                //             headerLen: cell.headerLen,
-                //             paneWidth: cell.paneWidth,
-                //             paneHeight: t.bodyPaneHeight * t.ratio ,
-                //             info: cell.info
-                //         })
-                //         t.ctx.drawImage(c,
-                //             cell.startX + t.startX + t.leftMaxWidth ,
-                //             cell.startY + t.startY + t.headerPaneHeight * t.ratio,
-                //         ) 
-                //     }
-                // })
-                
-
-
                 //leftIndex
                 t.fixedLeftIndexData.map((item,index) => {
                     if(index < startIndex || index > endIndex) return;
@@ -572,7 +549,8 @@ class AcrossLine{
                         let c = t.drawBodyPane({
                             field: cell.field,
                             type: 'body',
-                            index: cell.index,
+                            index: cell.index,//列index
+                            rowIndex: index,//行index
                             headerLen: cell.headerLen,
                             paneWidth: cell.paneWidth,
                             paneHeight: t.bodyPaneHeight * t.ratio ,
