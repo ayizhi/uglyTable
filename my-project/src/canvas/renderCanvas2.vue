@@ -257,7 +257,7 @@ class AcrossLine{
                 //对t.dataBody分片，整体渲染太慢，切成20(屏幕最大显示数)个一片
                 //对fixedBodyData采取类数组对象的方式
             
-                let splitLen = Math.ceil(t.height / t.bodyPaneHeight) + 10;
+                let splitLen = Math.ceil(t.height / t.bodyPaneHeight) * 10;
                 let splitNum = Math.ceil(t.dataBody.length / splitLen);
 
                 for(let i = 0 ; i < splitNum ; i++){
