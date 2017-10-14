@@ -181,7 +181,7 @@ class AcrossLine{
                 fixedLeftUpData: {}, //固定不动的data
                 fixedHeaderData : {},//重点，经过处理后的header数据
                 fixedLeftIndexData: [],//下在x方向上固定的index列
-                fixedBodyData: [],//经过处理后的body数据
+                fixedBodyData: {},//经过处理后的body数据
 
                 //location
                 startX: 0,
@@ -248,47 +248,34 @@ class AcrossLine{
             //右上
             t.worker.postMessage('dealHeaderData',[t.dataHeaders,headerOptions])
             .then((rightHeaderData) => {
-                console.log(rightHeaderData,'===')
                 t.fixedHeaderData = rightHeaderData.fixedHeaderData;
                 t.rightMaxWidth = rightHeaderData.width;
 
-
-                // //对t.dataBody分片，整体渲染太慢，切成20(屏幕最大显示数)个一片
-                // let splitLen = Math.ceil(t.height / t.bodyPaneHeight) + 10;
-                // let splitNum = Math.ceil(t.dataBody.length / splitLen);
-                // let i = 0;
-                
-                // const iter = (i) => {
-                //     let currentData = t.dataBody.slice(i * splitLen,(i + 1) * splitLen);
-                //     t.worker.postMessage('dealBodyData',[currentData,rightHeaderData.fixedHeaderData,bodyOptions])
-                //     .then((rightBodyData) => {
-                //         t.fixedBodyData = t.fixedBodyData.concat(rightBodyData.fixedBodyData)
-                //         // console.log(rightBodyData.fixedBodyData)
-                        
-                //         //更新右边边界
-                //         t.downBorder = (-t.fixedBodyData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
-                //         if(i < splitNum){
-                //             iter(i + 1)
-                //         }else{
-                //             console.log(t.fixedBodyData,'===|===');                
-                //         }
-                //     })
-                // }
-
-                // iter(i)
-
+                console.log(rightHeaderData,'===')
 
                 
-                ////右下
-                t.worker.postMessage('dealBodyData',[t.dataBody,rightHeaderData.fixedHeaderData,bodyOptions])
-                .then((rightBodyData) => {
-                    console.log(rightBodyData,'===|===');
-                    t.fixedBodyData = rightBodyData.fixedBodyData;
+                //对t.dataBody分片，整体渲染太慢，切成20(屏幕最大显示数)个一片
+                //对fixedBodyData采取类数组对象的方式
+            
+                let splitLen = Math.ceil(t.height / t.bodyPaneHeight) + 10;
+                let splitNum = Math.ceil(t.dataBody.length / splitLen);
 
-                    //更新右边边界
-                    t.downBorder = (-t.fixedBodyData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                for(let i = 0 ; i < splitNum ; i++){
+                    let currentData = t.dataBody.slice(i * splitLen , (i + 1) * splitLen);
                     
-                })
+                    t.worker.postMessage('dealBodyData',[currentData,rightHeaderData.fixedHeaderData,bodyOptions,i * splitLen])
+                    .then((rightBodyData) => {
+                        for(let key in rightBodyData.fixedBodyData){
+                            t.fixedBodyData[key] = rightBodyData.fixedBodyData[key]
+
+                            if(key  == t.dataBody.length - 1){
+                                //更新右边边界
+                                console.log(rightBodyData,'===|===');            
+                                t.downBorder = (-t.fixedBodyData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                            }
+                        }
+                    })
+                }
             })
 
 
@@ -540,9 +527,9 @@ class AcrossLine{
                     leftX
                 }
 
-
-                //画主body,分片
-                t.fixedBodyData.map((item,index) => {
+                 //画主body,分片
+                Object.keys(t.fixedBodyData).map((index) => {
+                    let item = t.fixedBodyData[index]
                     if(index < startIndex || index > endIndex) return;
                     Object.keys(item).map((key) => {
                         let cellPa = item[key];
@@ -572,6 +559,7 @@ class AcrossLine{
                         })
                     })
                 })
+
 
                 //leftIndex
                 t.fixedLeftIndexData.map((item,index) => {

@@ -210,11 +210,10 @@ let workerConfig = [
             }
         }
     },
-
-    //右下（main）
-    {
+   //右下（main）
+   {
         message: 'dealBodyData',
-        func(dataBody,fixedHeaderData,options){
+        func(dataBody,fixedHeaderData,options,startIndex){
             //options
             let ratio = options.ratio;
             let bodyPaneHeight = options.bodyPaneHeight;
@@ -224,22 +223,23 @@ let workerConfig = [
             let selfStartY = 0;
 
             //main
-            let fixedBodyData = []
-            
+            let fixedBodyData = {}
+
             //分片
             dataBody.map((data,index) => {
                 let tmpData = {};
                 let key;
 
                 selfStartX = 0;
-                selfStartY = index * bodyPaneHeight * ratio
+                selfStartY = startIndex * bodyPaneHeight * ratio;
 
                 for(key in fixedHeaderData){
                     let colPreSet = fixedHeaderData[key]; 
                     let colData = data[key] || '';
                     let i = colPreSet.index;
                     let paneWidth = colPreSet.paneWidth;
-                    let headerLen = colPreSet.headerLen;                
+                    let headerLen = colPreSet.headerLen; 
+                    
                     
                     //position
                     let startX = selfStartX;
@@ -247,7 +247,7 @@ let workerConfig = [
                     let startY = selfStartY;
                     let endY = startY + bodyPaneHeight * ratio;
 
-                     //分片,10项为一片
+                    //分片,10项为一片
                     let partLen = 7;
                     let partIndex = parseInt(i / partLen);
                     
@@ -257,10 +257,10 @@ let workerConfig = [
                     }else if(i % partLen == partLen - 1){                        
                         tmpData[partIndex].endX = endX;                   
                     };
-                                                      
+                                                    
                     tmpData[partIndex].children = tmpData[partIndex].children == undefined ? {} : tmpData[partIndex].children;                                     
                     tmpData[partIndex].children[i] = {
-                        rowIndex: index,                        
+                        rowIndex: startIndex,                        
                         field: key,
                         type: 'body',  
                         startX,
@@ -276,7 +276,8 @@ let workerConfig = [
                     //reset selfStartX
                     selfStartX = endX;
                 }
-                fixedBodyData.push(tmpData)
+                fixedBodyData[startIndex] = tmpData;
+                startIndex++
             })
 
             return {
