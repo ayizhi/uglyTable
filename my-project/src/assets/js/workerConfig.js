@@ -149,7 +149,7 @@ let workerConfig = [
     //左下
     {
         message: 'dealIndexData',
-        func(dataBody,fixedLeftUpData,options){
+        func(dataBody,fixedLeftUpData,options,startIndex){
             //options
             let ratio = options.ratio;
             let bodyPaneHeight = options.bodyPaneHeight;
@@ -159,7 +159,7 @@ let workerConfig = [
             let selfStartY = 0;
             
             //main
-            let fixedLeftIndexData = [];
+            let fixedLeftIndexData = {};
 
             dataBody.map((data,index) => {
                 
@@ -167,10 +167,8 @@ let workerConfig = [
                 let key;
 
                 selfStartX = 0;
-                selfStartY = index * bodyPaneHeight * ratio;
+                selfStartY = startIndex * bodyPaneHeight * ratio;                
     
-            
-
                 for(key in fixedLeftUpData){
                     let colPreSet = fixedLeftUpData[key];
                     let colData = data[key] || '';
@@ -185,7 +183,7 @@ let workerConfig = [
                     let endY = startY + bodyPaneHeight * ratio;
 
                     tmpData[i] = {
-                        rowIndex: index,                        
+                        rowIndex: startIndex,                        
                         field: key,
                         type: 'body',  
                         startX,
@@ -202,7 +200,8 @@ let workerConfig = [
                     //reset selfStartX
                     selfStartX = endX;
                 }
-                fixedLeftIndexData.push(tmpData)
+                fixedLeftIndexData[startIndex] = tmpData;
+                startIndex++
             })
 
             return {

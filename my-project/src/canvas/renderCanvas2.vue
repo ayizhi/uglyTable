@@ -180,7 +180,7 @@ class AcrossLine{
                 //数据容器
                 fixedLeftUpData: {}, //固定不动的data
                 fixedHeaderData : {},//重点，经过处理后的header数据
-                fixedLeftIndexData: [],//下在x方向上固定的index列
+                fixedLeftIndexData: {},//下在x方向上固定的index列
                 fixedBodyData: {},//经过处理后的body数据
 
                 //location
@@ -237,21 +237,34 @@ class AcrossLine{
                 t.fixedLeftUpData = leftHeaderData.fixedLeftUpData;
                 t.leftMaxWidth = leftHeaderData.width;
                 
-                //左下
-                t.worker.postMessage('dealIndexData',[t.dataBody,leftHeaderData.fixedLeftUpData,bodyOptions])
-                .then((leftBodyData) => {
-                    console.log(leftBodyData,'---|---')
-                    t.fixedLeftIndexData = leftBodyData.fixedLeftIndexData;
-                })
+                //左下分片
+                let splitLen = Math.ceil(t.height / t.bodyPaneHeight) * 10;
+                let splitNum = Math.ceil(t.dataBody.length / splitLen);
+
+                for(let i = 0 ; i < splitNum ; i++){
+                    console.log(i,splitLen,splitNum)
+                    let currentData = t.dataBody.slice(i * splitLen , (i + 1) * splitLen);
+                    t.worker.postMessage('dealIndexData',[currentData,leftHeaderData.fixedLeftUpData,bodyOptions,i * splitLen])
+                    .then((leftBodyData) => {
+                        for(let key in leftBodyData.fixedLeftIndexData){
+                            t.fixedLeftIndexData[key] = leftBodyData.fixedLeftIndexData[key]
+
+                            if(key  == t.dataBody.length - 1){
+                                //更新右边边界
+                                console.log(t.fixedLeftIndexData,'---|---');            
+                                t.downBorder = (-t.fixedLeftIndexData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                            }
+                        }
+                    })
+                }
             })
 
             //右上
             t.worker.postMessage('dealHeaderData',[t.dataHeaders,headerOptions])
             .then((rightHeaderData) => {
+                console.log(rightHeaderData,'===')                
                 t.fixedHeaderData = rightHeaderData.fixedHeaderData;
                 t.rightMaxWidth = rightHeaderData.width;
-
-                console.log(rightHeaderData,'===')
 
                 
                 //对t.dataBody分片，整体渲染太慢，切成20(屏幕最大显示数)个一片
@@ -270,8 +283,7 @@ class AcrossLine{
 
                             if(key  == t.dataBody.length - 1){
                                 //更新右边边界
-                                console.log(rightBodyData,'===|===');            
-                                t.downBorder = (-t.fixedBodyData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                                console.log(t.fixedBodyData,'===|===');            
                             }
                         }
                     })
@@ -562,7 +574,8 @@ class AcrossLine{
 
 
                 //leftIndex
-                t.fixedLeftIndexData.map((item,index) => {
+                Object.keys(t.fixedLeftIndexData).map((index) => {
+                    let item  = t.fixedLeftIndexData[index]
                     if(index < startIndex || index > endIndex) return;
                 
                     for(let key in item){
