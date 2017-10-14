@@ -171,7 +171,7 @@ class AcrossLine{
                 ctx: null,
                 tableData,
                 dataHeaders,
-                dataBody, 
+                dataBody, //每次新加进来的data
               
 
                 acrossLine: new AcrossLine({width: 100}).canvas,
@@ -182,12 +182,6 @@ class AcrossLine{
                 fixedHeaderData : {},//重点，经过处理后的header数据
                 fixedLeftIndexData: [],//下在x方向上固定的index列
                 fixedBodyData: [],//经过处理后的body数据
-
-                // //canvas容器
-                // fixedCanvasList: [],//左上角固定不动的
-                // headerCanvasList: [],//表头canvas，临时，会在之后把整张表画成一张图                
-                // indexCanvasList: [],//左下在x方向上固定的index列
-                // bodyCanvasList: [],//表身canvas组
 
                 //location
                 startX: 0,
@@ -257,12 +251,43 @@ class AcrossLine{
                 console.log(rightHeaderData,'===')
                 t.fixedHeaderData = rightHeaderData.fixedHeaderData;
                 t.rightMaxWidth = rightHeaderData.width;
+
+
+                // //对t.dataBody分片，整体渲染太慢，切成20(屏幕最大显示数)个一片
+                // let splitLen = Math.ceil(t.height / t.bodyPaneHeight) + 10;
+                // let splitNum = Math.ceil(t.dataBody.length / splitLen);
+                // let i = 0;
                 
-                //右下
+                // const iter = (i) => {
+                //     let currentData = t.dataBody.slice(i * splitLen,(i + 1) * splitLen);
+                //     t.worker.postMessage('dealBodyData',[currentData,rightHeaderData.fixedHeaderData,bodyOptions])
+                //     .then((rightBodyData) => {
+                //         t.fixedBodyData = t.fixedBodyData.concat(rightBodyData.fixedBodyData)
+                //         // console.log(rightBodyData.fixedBodyData)
+                        
+                //         //更新右边边界
+                //         t.downBorder = (-t.fixedBodyData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                //         if(i < splitNum){
+                //             iter(i + 1)
+                //         }else{
+                //             console.log(t.fixedBodyData,'===|===');                
+                //         }
+                //     })
+                // }
+
+                // iter(i)
+
+
+                
+                ////右下
                 t.worker.postMessage('dealBodyData',[t.dataBody,rightHeaderData.fixedHeaderData,bodyOptions])
                 .then((rightBodyData) => {
                     console.log(rightBodyData,'===|===');
                     t.fixedBodyData = rightBodyData.fixedBodyData;
+
+                    //更新右边边界
+                    t.downBorder = (-t.fixedBodyData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                    
                 })
             })
 
@@ -286,7 +311,7 @@ class AcrossLine{
                 let canvas = document.querySelector('#' + t.id)
 
                 //底边界
-                t.downBorder = (-t.dataBody.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                t.downBorder = (-t.fixedBodyData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
 
                 document.onmousedown = (e) => {
                     console.log('down')                
@@ -507,6 +532,14 @@ class AcrossLine{
                 //确定所有y轴上要显示的index
                 let startIndex = Math.floor(upY / (t.bodyPaneHeight * t.ratio))
                 let endIndex = Math.ceil(downY / (t.bodyPaneHeight * t.ratio))
+
+                let config = {
+                    startIndex,
+                    endIndex,
+                    rightX,
+                    leftX
+                }
+
 
                 //画主body,分片
                 t.fixedBodyData.map((item,index) => {

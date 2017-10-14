@@ -9,7 +9,7 @@ console.log(reportData.length)
 let tmp = [];
 
 
-for (let i = 0; i < 50; i++){
+for (let i = 0; i < 10; i++){
 	for (let r = 0 ; r < reportData.length; r++){
 		tmp.push(reportData[r])
 	}
@@ -21,8 +21,10 @@ console.log(tmp.length)
 data.data.data.reportData = tmp
 
 
-let fs = require('fs');
 
 console.log(data.data.data.reportData.length)
+
+let fs = require('fs');
+
 
 fs.writeFile('output.js',JSON.stringify(data.data))

@@ -283,6 +283,6 @@ let workerConfig = [
                 fixedBodyData: fixedBodyData
             }
         }
-    }
+    },
 ]
 export default workerConfig
