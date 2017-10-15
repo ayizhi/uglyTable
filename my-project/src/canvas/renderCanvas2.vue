@@ -409,6 +409,7 @@ class AcrossLine{
                         0,
                         1,
                         tHeight)
+                        
                     }                    
 
                     //text default color
