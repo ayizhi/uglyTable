@@ -242,7 +242,6 @@ class AcrossLine{
                 let splitNum = Math.ceil(t.dataBody.length / splitLen);
 
                 for(let i = 0 ; i < splitNum ; i++){
-                    console.log(i,splitLen,splitNum)
                     let currentData = t.dataBody.slice(i * splitLen , (i + 1) * splitLen);
                     t.worker.postMessage('dealIndexData',[currentData,leftHeaderData.fixedLeftUpData,bodyOptions,i * splitLen])
                     .then((leftBodyData) => {
