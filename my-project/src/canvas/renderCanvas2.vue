@@ -188,6 +188,8 @@ class AcrossLine{
                 startY: 0,
                 leftMaxWidth: 0,
                 rightMaxWidth: 0,
+                currentX: undefined,
+                currentY: undefined,
                 
                 //cell canvas cache
                 headerCanvasCache: {},
@@ -320,6 +322,7 @@ class AcrossLine{
                 }
 
                 document.onmousemove = (e) => {
+                    
                     if(!draging) return
 
                     //针对y
@@ -363,6 +366,22 @@ class AcrossLine{
                     draging = false;    
                     console.log('up')                
                 }
+
+                //鼠标当前坐标
+                console.log(t.canvas)
+                let canvasLeft = t.canvas.offsetLeft;
+                let canvasTop = t.canvas.offsetTop;
+                t.canvas.onmousemove = function(e){
+                    t.currentX = e.offsetX;
+                    t.currentY = e.offsetY;
+                }
+                t.canvas.onmouseleave = function(e){
+                    t.currentX = undefined;
+                    t.currentY = undefined;
+                }
+
+
+
             },
             //============================ event end ==========================
 
@@ -445,6 +464,10 @@ class AcrossLine{
                 let rowIndex = obj.rowIndex;//行index
                 let tWidth = obj.paneWidth;
                 let tHeight = obj.paneHeight;
+                let startX = obj.startX;
+                let endX = obj.endX;
+                let startY = obj.startY;
+                let endY = obj.endY;
 
                 //body单元格cache
                 t.bodyCanvasCache[rowIndex] = t.bodyCanvasCache[rowIndex] == undefined ? {} : t.bodyCanvasCache[rowIndex];
@@ -508,12 +531,18 @@ class AcrossLine{
                         ctx.fillText(obj.info,t.padding,tHeight/2)                   
                     }
 
-                    t.bodyCanvasCache[rowIndex][field] = canvas
+                    t.bodyCanvasCache[rowIndex][field] = {
+                        canvas,
+                        startX,
+                        endX,
+                        startY,
+                        endY,
+                    }
                 }
 
 
         
-                return t.bodyCanvasCache[rowIndex][field]  
+                return t.bodyCanvasCache[rowIndex][field].canvas  
             },
 
 
@@ -557,6 +586,10 @@ class AcrossLine{
                             let c = t.drawBodyPane({
                                 field: cell.field,
                                 type: 'body',
+                                startX,
+                                endX,
+                                startY: cell.startY,
+                                endY: cell.endY,
                                 index: cell.index,//列index
                                 rowIndex: index,//行index
                                 headerLen: cell.headerLen,
