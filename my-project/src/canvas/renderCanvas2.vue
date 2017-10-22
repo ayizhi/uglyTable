@@ -195,6 +195,7 @@ class AcrossLine{
                 headerCanvasCache: {},
                 bodyCanvasCache: {},
                 bodyCanvasBgCache: {},
+                bodyCanvasTextCache: {},
 
                 //拖拽           
                 downBorder: 0,
@@ -470,7 +471,9 @@ class AcrossLine{
                 let endY = obj.endY;
 
                 //body单元格cache
-                t.bodyCanvasCache[rowIndex] = t.bodyCanvasCache[rowIndex] == undefined ? {} : t.bodyCanvasCache[rowIndex];
+                // t.bodyCanvasCache[rowIndex] = t.bodyCanvasCache[rowIndex] == undefined ? {} : t.bodyCanvasCache[rowIndex];
+                t.bodyCanvasCache[rowIndex] = t.bodyCanvasCache[rowIndex] || {};
+                t.bodyCanvasTextCache[rowIndex] = t.bodyCanvasTextCache[rowIndex] || {};
                 if(t.bodyCanvasCache[rowIndex][field] == undefined){
                     let canvas = document.createElement('canvas');
                     let ctx = canvas.getContext('2d');
@@ -511,25 +514,39 @@ class AcrossLine{
                         t.bodyCanvasBgCache[field] = bgCanvas
                     }
                     
-                    let cellCanvas = t.bodyCanvasBgCache[field];    
+                    let cellBgCanvas = t.bodyCanvasBgCache[field];  
+                    ctx.drawImage(cellBgCanvas,0,0)
+                    
+                    
+                    if(t.bodyCanvasTextCache[rowIndex][field] == undefined){
+                        let textCanvas = document.createElement('canvas');
+                        let textCtx = textCanvas.getContext('2d');
+                        textCanvas.width = tWidth;
+                        textCanvas.height = tHeight;
 
-                    ctx.drawImage(cellCanvas,0,0)
+                        //text default color
+                        textCtx.font = t.fontSize * t.ratio + 'px Arif';
+                        if(obj.type == 'header'){
+                            textCtx.fillStyle = '#9e9ea6';
+                        }else{
+                            textCtx.fillStyle = '#555459';
+                        }
 
-                    //text default color
-                    ctx.font = t.fontSize * t.ratio + 'px Arif';
-                    if(obj.type == 'header'){
-                        ctx.fillStyle = '#9e9ea6';
-                    }else{
-                        ctx.fillStyle = '#555459';
+                        textCtx.textAlign = t.textAglin;    //start, end, left, right or center
+                        textCtx.textBaseline = 'middle';
+                        if(t.textAglin == 'center'){
+                            textCtx.fillText(obj.info,tWidth/2,tHeight/2)
+                        }else if(t.textAglin == 'left'){
+                            textCtx.fillText(obj.info,t.padding,tHeight/2)                   
+                        }
+
+                        t.bodyCanvasTextCache[rowIndex][field] = textCanvas
                     }
 
-                    ctx.textAlign = t.textAglin;    //start, end, left, right or center
-                    ctx.textBaseline = 'middle';
-                    if(t.textAglin == 'center'){
-                        ctx.fillText(obj.info,tWidth/2,tHeight/2)
-                    }else if(t.textAglin == 'left'){
-                        ctx.fillText(obj.info,t.padding,tHeight/2)                   
-                    }
+                    let cellTextCanvas = t.bodyCanvasTextCache[rowIndex][field];
+                    ctx.drawImage(cellTextCanvas,0,0)
+
+  
 
                     t.bodyCanvasCache[rowIndex][field] = {
                         canvas,
