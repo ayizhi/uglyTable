@@ -480,7 +480,7 @@ class AcrossLine{
                     canvas.width = tWidth;
                     canvas.height = tHeight;
 
-                    //缓存
+                    //背景缓存
                     if(t.bodyCanvasBgCache[field] == undefined){
                         let bgCanvas = document.createElement('canvas');
                         let bgCtx = bgCanvas.getContext('2d');
@@ -517,8 +517,9 @@ class AcrossLine{
                     let cellBgCanvas = t.bodyCanvasBgCache[field];  
                     ctx.drawImage(cellBgCanvas,0,0)
                     
-                    
-                    if(t.bodyCanvasTextCache[rowIndex][field] == undefined){
+                    //字体缓存
+                    if(t.bodyCanvasTextCache[rowIndex][field] == undefined && obj.info != ''){
+                        
                         let textCanvas = document.createElement('canvas');
                         let textCtx = textCanvas.getContext('2d');
                         textCanvas.width = tWidth;
@@ -543,9 +544,11 @@ class AcrossLine{
                         t.bodyCanvasTextCache[rowIndex][field] = textCanvas
                     }
 
-                    let cellTextCanvas = t.bodyCanvasTextCache[rowIndex][field];
-                    ctx.drawImage(cellTextCanvas,0,0)
-
+                    if(obj.info != ''){
+                        let cellTextCanvas = t.bodyCanvasTextCache[rowIndex][field];
+                        ctx.drawImage(cellTextCanvas,0,0)
+                    }
+              
   
 
                     t.bodyCanvasCache[rowIndex][field] = {
