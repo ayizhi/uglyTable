@@ -10,11 +10,14 @@
 import Data from './data';
 import workerConfig from '../assets/js/workerConfig';
 console.log(Data);
+import axios from 'axios'
+console.log(Mock)
 
-import Mock from 'mockjs';
-Mock.mock('/get-data',() => {
-    return Data
-})
+Mock.mock('/get-data', Data);
+
+axios.get('/get-data').then((data) => {
+    console.log(111,data)
+});
 
  //requestAnimationFrame兼容性封装
 (() => {  
