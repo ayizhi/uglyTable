@@ -11,6 +11,11 @@ import Data from './data';
 import workerConfig from '../assets/js/workerConfig';
 console.log(Data);
 
+import Mock from 'mockjs';
+Mock.mock('/get-data',() => {
+    return Data
+})
+
  //requestAnimationFrame兼容性封装
 (() => {  
     let lastTime = 0;  
