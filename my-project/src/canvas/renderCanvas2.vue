@@ -159,20 +159,28 @@ class AcrossLine{
                 default: () => {
                     return 2
                 }
+            },
+
+
+            reportData: {
+                type: Object,
+                default: () => {
+                    return {}
+                }
             }
+
         },
 
         data(){
             const t = this;
-            const tableData = Data.data;
-            let dataHeaders = tableData.reportHeader;
-            let dataBody = tableData.reportData;
+            let dataHeaders = t.reportData.data.reportHeader;
+            let dataBody = t.reportData.data.reportData;
+            let bodyDataLen = dataBody.length;
 
     
             return {
                 canvas: null,
                 ctx: null,
-                tableData,
                 dataHeaders,
                 dataBody, //每次新加进来的data
               
@@ -185,6 +193,7 @@ class AcrossLine{
                 fixedHeaderData : {},//重点，经过处理后的header数据
                 fixedLeftIndexData: {},//下在x方向上固定的index列
                 fixedBodyData: {},//经过处理后的body数据
+                bodyDataLen,//body现在数据的长度
 
                 //location
                 startX: 0,
@@ -211,7 +220,6 @@ class AcrossLine{
 
         created(){
             const t = this;
-
             t.worker = t.$worker.create(workerConfig)
         },
 
@@ -258,7 +266,6 @@ class AcrossLine{
                                 //更新右边边界
                                 console.log(t.fixedLeftIndexData,'---|---');            
                                 t.downBorder = (-(Object.keys(t.fixedLeftIndexData).length) * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
-                                console.log(t.downBorder,(Object.keys(t.fixedLeftIndexData).length) , t.bodyPaneHeight , t.headerPaneHeight  , t.ratio)
                             }
                         }
                     })
@@ -303,6 +310,13 @@ class AcrossLine{
             t.bindEvent();
         },
 
+        watch: {
+            reportData: {
+                handler: (newVal,oldVal) => {
+                    console.log(111,newVal,oldVal,2222)
+                }
+            }
+        },
 
 
         methods: {
@@ -344,7 +358,8 @@ class AcrossLine{
                                 y: t.startY,
                                 downBorder: t.downBorder,
                                 ratio: t.ratio,
-                                bodyPaneHeight: t.bodyPaneHeight
+                                bodyPaneHeight: t.bodyPaneHeight,
+                                dataLength: t.bodyDataLen
                             })
 
         
@@ -385,7 +400,6 @@ class AcrossLine{
                 }
 
                 //鼠标当前坐标
-                console.log(t.canvas)
                 let canvasLeft = t.canvas.offsetLeft;
                 let canvasTop = t.canvas.offsetTop;
                 t.canvas.onmousemove = function(e){

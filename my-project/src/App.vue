@@ -3,6 +3,7 @@
     <vue-canvas
      id="canvas" :width="1000" :height="400" :fixed="2"
       @upAndDown="handleUpAndDown"
+      :reportData="reportData"
      ></vue-canvas>
   </div>
 </template>
@@ -13,21 +14,45 @@ import axios from 'axios'
 import vueCanvas from './canvas/renderCanvas2'
 Mock.mock('/get-data', Data);
 
-axios.get('/get-data').then((data) => {
-  
-});
+
 export default {
-  name: 'app',
+    name: 'app',
+    data(){
+		const t =  this;
+		return {
+			reportData: Data, 
+		}
+    },
+    methods: {
+		handleUpAndDown(e){
+			const t = this;
+			console.log(e)
+			let i = Math.floor(-e.y/(e.bodyPaneHeight * 2) )
+			setTimeout(() => {
+				if(e.dataLength - i < 930){
 
-  methods: {
-    handleUpAndDown(e){
-      const t = this;
+					t.loadingDataAjax().then((data) => {
+						console.log(data)
+					})
+				}
+			},1)
+		
+			console.log(i,e.dataLength - i,e.dataLength,'----')
+		},
+
+		loadingDataAjax(){
+			const t = this;
+			return new Promise((resolve) => {
+				axios.get('/get-data').then((data) => {
+					resolve(data)
+				});	
+			})
+		}
+    },
+
+    components: {
+    	'vue-canvas': vueCanvas
     }
-  },
-
-  components: {
-    'vue-canvas': vueCanvas
-  }
 }
 </script>
 
