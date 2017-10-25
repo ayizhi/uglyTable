@@ -10,14 +10,9 @@
 import Data from './data';
 import workerConfig from '../assets/js/workerConfig';
 console.log(Data);
-import axios from 'axios'
-console.log(Mock)
 
-Mock.mock('/get-data', Data);
 
-axios.get('/get-data').then((data) => {
-    console.log(111,data)
-});
+
 
  //requestAnimationFrame兼容性封装
 (() => {  
@@ -262,7 +257,8 @@ class AcrossLine{
                             if(key  == t.dataBody.length - 1){
                                 //更新右边边界
                                 console.log(t.fixedLeftIndexData,'---|---');            
-                                t.downBorder = (-t.fixedLeftIndexData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                                t.downBorder = (-(Object.keys(t.fixedLeftIndexData).length) * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                                console.log(t.downBorder,(Object.keys(t.fixedLeftIndexData).length) , t.bodyPaneHeight , t.headerPaneHeight  , t.ratio)
                             }
                         }
                     })
@@ -342,7 +338,19 @@ class AcrossLine{
                         if(tmpY <= 0){
                             t.startY = tmpY
                             dragStartY = e.clientY
-                        }
+
+                            //上下滚动
+                            t.$emit('upAndDown',{
+                                y: t.startY,
+                                downBorder: t.downBorder,
+                                ratio: t.ratio,
+                                bodyPaneHeight: t.bodyPaneHeight
+                            })
+
+        
+                            
+                        };
+
 
                         //滚到最下面
                         if(t.startY < t.downBorder){
