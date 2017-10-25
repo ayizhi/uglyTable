@@ -14,7 +14,9 @@
 import Data from './canvas/data';
 import axios from 'axios'
 import vueCanvas from './canvas/renderCanvas2'
-Mock.mock('/get-data', Data);
+Mock.mock('/get-data', function(){
+	return Data
+});
 
 
 export default {
