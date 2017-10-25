@@ -163,18 +163,30 @@ class AcrossLine{
 
 
             reportData: {
-                type: Object,
+                type: Array,
                 default: () => {
-                    return {}
+                    return []
                 }
+            },
+
+            reportHeader: {
+                type: Array,
+                default: () => {
+                    return []
+                }
+            },
+
+            pageNum: {
+                type: Number
             }
 
         },
 
         data(){
             const t = this;
-            let dataHeaders = t.reportData.data.reportHeader;
-            let dataBody = t.reportData.data.reportData;
+            let dataHeaders = t.reportHeader;
+            console.log(t.reportData,'---------------------------')
+            let dataBody = t.reportData;
             let bodyDataLen = dataBody.length;
 
     
@@ -184,7 +196,6 @@ class AcrossLine{
                 dataHeaders,
                 dataBody, //每次新加进来的data
               
-
                 acrossLine: new AcrossLine({width: 100}).canvas,
                 verticalLine: new VerticalLine({height: 100}).canvas,
 
@@ -214,6 +225,17 @@ class AcrossLine{
                 rightBorder: 0,
 
 
+                bodyOptions: {
+                    ratio: t.ratio,
+                    bodyPaneHeight: t.bodyPaneHeight
+                },
+
+
+                headerOptions: {
+                    fixedColumnsLeft: t.fixedColumnsLeft,
+                    ratio: t.ratio,
+                    headerPaneHeight: t.headerPaneHeight
+                }
 
             }
         },
@@ -231,76 +253,28 @@ class AcrossLine{
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
 
-            //headerOptions
-            let headerOptions = {
-                fixedColumnsLeft: t.fixedColumnsLeft,
-                ratio: t.ratio,
-                headerPaneHeight: t.headerPaneHeight
-            }
 
-            //bodyOptions
-            let bodyOptions = {
-                ratio: t.ratio,
-                bodyPaneHeight: t.bodyPaneHeight
-            }
+           
 
             //左上
-            t.worker.postMessage('dealFixedData',[t.dataHeaders,headerOptions])
+            t.worker.postMessage('dealFixedData',[t.dataHeaders,t.headerOptions])
             .then((leftHeaderData) => {
                 console.log(leftHeaderData,'---')
                 t.fixedLeftUpData = leftHeaderData.fixedLeftUpData;
                 t.leftMaxWidth = leftHeaderData.width;
                 
-                //左下分片
-                let splitLen = Math.ceil(t.height / t.bodyPaneHeight) * 10;
-                let splitNum = Math.ceil(t.dataBody.length / splitLen);
-
-                for(let i = 0 ; i < splitNum ; i++){
-                    let currentData = t.dataBody.slice(i * splitLen , (i + 1) * splitLen);
-                    t.worker.postMessage('dealIndexData',[currentData,leftHeaderData.fixedLeftUpData,bodyOptions,i * splitLen])
-                    .then((leftBodyData) => {
-                        for(let key in leftBodyData.fixedLeftIndexData){
-                            t.fixedLeftIndexData[key] = leftBodyData.fixedLeftIndexData[key]
-
-                            if(key  == t.dataBody.length - 1){
-                                //更新右边边界
-                                console.log(t.fixedLeftIndexData,'---|---');            
-                                t.downBorder = (-(Object.keys(t.fixedLeftIndexData).length) * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
-                            }
-                        }
-                    })
-                }
+                t.dealLeftBodyData(t.dataBody,leftHeaderData)
             })
 
             //右上
-            t.worker.postMessage('dealHeaderData',[t.dataHeaders,headerOptions])
+            t.worker.postMessage('dealHeaderData',[t.dataHeaders,t.headerOptions])
             .then((rightHeaderData) => {
                 console.log(rightHeaderData,'===')                
                 t.fixedHeaderData = rightHeaderData.fixedHeaderData;
                 t.rightMaxWidth = rightHeaderData.width;
 
-                
-                //对t.dataBody分片，整体渲染太慢，切成20(屏幕最大显示数)个一片
-                //对fixedBodyData采取类数组对象的方式
+                t.dealRightBodyData(t.dataBody,rightHeaderData)
             
-                let splitLen = Math.ceil(t.height / t.bodyPaneHeight) * 10;
-                let splitNum = Math.ceil(t.dataBody.length / splitLen);
-
-                for(let i = 0 ; i < splitNum ; i++){
-                    let currentData = t.dataBody.slice(i * splitLen , (i + 1) * splitLen);
-                    
-                    t.worker.postMessage('dealBodyData',[currentData,rightHeaderData.fixedHeaderData,bodyOptions,i * splitLen])
-                    .then((rightBodyData) => {
-                        for(let key in rightBodyData.fixedBodyData){
-                            t.fixedBodyData[key] = rightBodyData.fixedBodyData[key]
-
-                            if(key  == t.dataBody.length - 1){
-                                //更新右边边界
-                                console.log(t.fixedBodyData,'===|===');            
-                            }
-                        }
-                    })
-                }
             })
 
 
@@ -311,7 +285,7 @@ class AcrossLine{
         },
 
         watch: {
-            reportData: {
+            pageNum: {
                 handler: (newVal,oldVal) => {
                     console.log(111,newVal,oldVal,2222)
                 }
@@ -320,8 +294,7 @@ class AcrossLine{
 
 
         methods: {
-
-            //============================ event start ==========================
+            //============================ event start ========================
             bindEvent(){
                 const t = this;
                 let draging = false;
@@ -354,6 +327,7 @@ class AcrossLine{
                             dragStartY = e.clientY
 
                             //上下滚动
+
                             t.$emit('upAndDown',{
                                 y: t.startY,
                                 downBorder: t.downBorder,
@@ -362,6 +336,7 @@ class AcrossLine{
                                 dataLength: t.bodyDataLen
                             })
 
+                        
         
                             
                         };
@@ -416,6 +391,62 @@ class AcrossLine{
             },
             //============================ event end ==========================
 
+            //============================ dealData start =====================
+
+            //处理左下数据（主要index数据）
+            dealLeftBodyData(dataBody,leftHeaderData){
+                const t = this;
+                //左下分片
+                let splitLen = Math.ceil(t.height / t.bodyPaneHeight) * 10;
+                let splitNum = Math.ceil(dataBody.length / splitLen);
+
+                for(let i = 0 ; i < splitNum ; i++){
+                    let currentData = dataBody.slice(i * splitLen , (i + 1) * splitLen);
+                    t.worker.postMessage('dealIndexData',[currentData,leftHeaderData.fixedLeftUpData,t.bodyOptions,i * splitLen])
+                    .then((leftBodyData) => {
+                        for(let key in leftBodyData.fixedLeftIndexData){
+                            t.fixedLeftIndexData[key] = leftBodyData.fixedLeftIndexData[key]
+
+                            if(key  == dataBody.length - 1){
+                                //更新右边边界
+                                console.log(t.fixedLeftIndexData,'---|---');            
+                                t.downBorder = (-(Object.keys(t.fixedLeftIndexData).length) * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                            }
+                        }
+                    })
+                }
+            },
+
+            //处理右下数据（主体数据）
+            dealRightBodyData(dataBody,rightHeaderData){
+                const t = this;
+
+                //对t.dataBody分片，整体渲染太慢，切成20(屏幕最大显示数)个一片
+                //对fixedBodyData采取类数组对象的方式
+            
+                let splitLen = Math.ceil(t.height / t.bodyPaneHeight) * 10;
+                let splitNum = Math.ceil(dataBody.length / splitLen);
+
+                for(let i = 0 ; i < splitNum ; i++){
+                    let currentData = dataBody.slice(i * splitLen , (i + 1) * splitLen);
+                    
+                    t.worker.postMessage('dealBodyData',[currentData,rightHeaderData.fixedHeaderData,t.bodyOptions,i * splitLen])
+                    .then((rightBodyData) => {
+              
+                        for(let key in rightBodyData.fixedBodyData){
+                            t.fixedBodyData[key] = rightBodyData.fixedBodyData[key]
+
+                            if(key  == t.dataBody.length - 1){
+                                //更新右边边界
+                                console.log(t.fixedBodyData,'===|===');            
+                            }
+                        }
+                    })
+                }
+            },
+
+            //============================ dealData end =======================
+            
 
             
             //============================ 绘制 start =========================
@@ -719,8 +750,6 @@ class AcrossLine{
                     ) 
                 }
             },
-
-
 
             run(){
                 const t = this;

@@ -4,6 +4,8 @@
      id="canvas" :width="1000" :height="400" :fixed="2"
       @upAndDown="handleUpAndDown"
       :reportData="reportData"
+	  :reportHeader="reportHeader"
+	  :pageNum="pageNum"
      ></vue-canvas>
   </div>
 </template>
@@ -20,24 +22,39 @@ export default {
     data(){
 		const t =  this;
 		return {
-			reportData: Data, 
+			pageNum: 1,
+			totalPageNum: 1,
+			limit: 500,
+			reportData: Data.data.reportData,
+			reportHeader: Data.data.reportHeader, 
+			hasLoad: false
 		}
     },
     methods: {
 		handleUpAndDown(e){
 			const t = this;
-			console.log(e)
-			let i = Math.floor(-e.y/(e.bodyPaneHeight * 2) )
-			setTimeout(() => {
-				if(e.dataLength - i < 930){
+			// console.log(e)
+			if(t.hasLoad) return;
+			
+			
+			let i = Math.floor(-e.y/(e.bodyPaneHeight * 2));
+			if(e.dataLength - i < 930){
+				t.hasLoad = true;
+				
+				t.loadingDataAjax().then((data) => {
+					console.log(data.data)
+					let tableData = data.data.data
+					t.reportData = tableData.reportData.slice(0)
+					t.reportHeader = tableData.reportHeader.slice(0)
+					t.pageNum += 1
 
-					t.loadingDataAjax().then((data) => {
-						console.log(data)
-					})
-				}
-			},1)
+					console.log(t.pageNum,'==============')
+
+				})
+			}
+
 		
-			console.log(i,e.dataLength - i,e.dataLength,'----')
+			// console.log(i,e.dataLength - i,e.dataLength,'----')
 		},
 
 		loadingDataAjax(){
