@@ -22,7 +22,6 @@ export default {
   methods: {
     handleUpAndDown(e){
       const t = this;
-      console.log(e)
     }
   },
 
