@@ -291,20 +291,11 @@ class AcrossLine{
         watch: {
             pageNum(newVal,oldVal){
                     const t = this;
-                    console.log(111,newVal,oldVal,2222)
-                    
                     let dataHeaders = t.reportHeader;
                     let dataBody = t.reportData;
-
-                    console.log(t)
-                    console.log(t.reportData)
-                    
-
                     let bodyDataLen = dataBody.length;
                     t.bodyDataLen += bodyDataLen;
 
-                    console.log(dataBody,t.bodyDataLen)
-                    
                     t.dealLeftBodyData(dataBody,t.leftHeaderData)
                     t.dealRightBodyData(dataBody,t.rightHeaderData)
                     
