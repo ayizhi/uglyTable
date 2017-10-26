@@ -50,7 +50,9 @@ export default {
 					t.reportHeader = tableData.reportHeader.slice(0)
 					t.pageNum += 1
 
-					console.log(t.pageNum,'==============')
+
+
+					console.log(t.pageNum,t.reportData,'==============')
 
 				})
 			}

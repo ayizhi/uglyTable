@@ -185,7 +185,6 @@ class AcrossLine{
         data(){
             const t = this;
             let dataHeaders = t.reportHeader;
-            console.log(t.reportData,'---------------------------')
             let dataBody = t.reportData;
             let bodyDataLen = dataBody.length;
 
@@ -205,6 +204,9 @@ class AcrossLine{
                 fixedLeftIndexData: {},//下在x方向上固定的index列
                 fixedBodyData: {},//经过处理后的body数据
                 bodyDataLen,//body现在数据的长度
+                leftHeaderData: null,//处理过后的左头的容器，因为只要处理一次，所以保存下来，
+                rightHeaderData: null,//处理过后的右头的容器，因为只要处理一次，所以保存下来，
+
 
                 //location
                 startX: 0,
@@ -224,13 +226,13 @@ class AcrossLine{
                 downBorder: 0,
                 rightBorder: 0,
 
-
+                //webworker计算body的时候需要的配置
                 bodyOptions: {
                     ratio: t.ratio,
                     bodyPaneHeight: t.bodyPaneHeight
                 },
 
-
+                //webworker计算header的时候需要的配置
                 headerOptions: {
                     fixedColumnsLeft: t.fixedColumnsLeft,
                     ratio: t.ratio,
@@ -262,8 +264,9 @@ class AcrossLine{
                 console.log(leftHeaderData,'---')
                 t.fixedLeftUpData = leftHeaderData.fixedLeftUpData;
                 t.leftMaxWidth = leftHeaderData.width;
+                t.leftHeaderData = leftHeaderData;
                 
-                t.dealLeftBodyData(t.dataBody,leftHeaderData)
+                t.dealLeftBodyData(t.dataBody,t.leftHeaderData)
             })
 
             //右上
@@ -272,8 +275,9 @@ class AcrossLine{
                 console.log(rightHeaderData,'===')                
                 t.fixedHeaderData = rightHeaderData.fixedHeaderData;
                 t.rightMaxWidth = rightHeaderData.width;
+                t.rightHeaderData = rightHeaderData;
 
-                t.dealRightBodyData(t.dataBody,rightHeaderData)
+                t.dealRightBodyData(t.dataBody,t.rightHeaderData)
             
             })
 
@@ -285,10 +289,26 @@ class AcrossLine{
         },
 
         watch: {
-            pageNum: {
-                handler: (newVal,oldVal) => {
+            pageNum(newVal,oldVal){
+                    const t = this;
                     console.log(111,newVal,oldVal,2222)
-                }
+                    
+                    let dataHeaders = t.reportHeader;
+                    let dataBody = t.reportData;
+
+                    console.log(t)
+                    console.log(t.reportData)
+                    
+
+                    let bodyDataLen = dataBody.length;
+                    t.bodyDataLen += bodyDataLen;
+
+                    console.log(dataBody,t.bodyDataLen)
+                    
+                    t.dealLeftBodyData(dataBody,t.leftHeaderData)
+                    t.dealRightBodyData(dataBody,t.rightHeaderData)
+                    
+                
             }
         },
 
@@ -335,10 +355,6 @@ class AcrossLine{
                                 bodyPaneHeight: t.bodyPaneHeight,
                                 dataLength: t.bodyDataLen
                             })
-
-                        
-        
-                            
                         };
 
 
@@ -399,14 +415,15 @@ class AcrossLine{
                 //左下分片
                 let splitLen = Math.ceil(t.height / t.bodyPaneHeight) * 10;
                 let splitNum = Math.ceil(dataBody.length / splitLen);
+                let len = Object.keys(t.fixedLeftIndexData).length;
+                console.log(len,'~~~~~~~~~~~~~~~~')
 
                 for(let i = 0 ; i < splitNum ; i++){
                     let currentData = dataBody.slice(i * splitLen , (i + 1) * splitLen);
                     t.worker.postMessage('dealIndexData',[currentData,leftHeaderData.fixedLeftUpData,t.bodyOptions,i * splitLen])
                     .then((leftBodyData) => {
                         for(let key in leftBodyData.fixedLeftIndexData){
-                            t.fixedLeftIndexData[key] = leftBodyData.fixedLeftIndexData[key]
-
+                            t.fixedLeftIndexData[+key + +len] = leftBodyData.fixedLeftIndexData[key]
                             if(key  == dataBody.length - 1){
                                 //更新右边边界
                                 console.log(t.fixedLeftIndexData,'---|---');            
@@ -426,6 +443,10 @@ class AcrossLine{
             
                 let splitLen = Math.ceil(t.height / t.bodyPaneHeight) * 10;
                 let splitNum = Math.ceil(dataBody.length / splitLen);
+                let len = Object.keys(t.fixedLeftIndexData).length;
+                
+                console.log(len,'~~~~~~~~~~~~~~~~')
+                
 
                 for(let i = 0 ; i < splitNum ; i++){
                     let currentData = dataBody.slice(i * splitLen , (i + 1) * splitLen);
@@ -434,7 +455,7 @@ class AcrossLine{
                     .then((rightBodyData) => {
               
                         for(let key in rightBodyData.fixedBodyData){
-                            t.fixedBodyData[key] = rightBodyData.fixedBodyData[key]
+                            t.fixedBodyData[+key + +len] = rightBodyData.fixedBodyData[key]
 
                             if(key  == t.dataBody.length - 1){
                                 //更新右边边界
