@@ -35,15 +35,18 @@ export default {
     methods: {
 		handleUpAndDown(e){
 			const t = this;
-			// console.log(e)
+			console.log(e.dataLength)
 			if(t.hasLoad) return;
 			
 			
-			let i = Math.floor(-e.y/(e.bodyPaneHeight * 2));
-			if(e.dataLength - i < 930){
+			let i = Math.floor(-e.y/(e.bodyPaneHeight * 2));//当前显示，从第几个开始
+			console.log(e.dataLength/i)
+			if(e.dataLength/i < 30){
 				t.hasLoad = true;
 				
+				
 				t.loadingDataAjax().then((data) => {
+					t.hasLoad = false;
 					console.log(data.data)
 					let tableData = data.data.data
 					t.reportData = tableData.reportData.slice(0)
@@ -58,7 +61,7 @@ export default {
 			}
 
 		
-			// console.log(i,e.dataLength - i,e.dataLength,'----')
+
 		},
 
 		loadingDataAjax(){

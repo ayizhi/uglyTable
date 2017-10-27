@@ -419,6 +419,7 @@ class AcrossLine{
                                 //更新右边边界
                                 console.log(t.fixedLeftIndexData,'---|---');            
                                 t.downBorder = (-(Object.keys(t.fixedLeftIndexData).length) * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                                console.log(t.downBorder,'~~~~~~~~')
                             }
                         }
                     })
