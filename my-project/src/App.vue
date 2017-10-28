@@ -35,12 +35,10 @@ export default {
     methods: {
 		handleUpAndDown(e){
 			const t = this;
-			console.log(e.dataLength)
 			if(t.hasLoad) return;
 			
 			
 			let i = Math.floor(-e.y/(e.bodyPaneHeight * 2));//当前显示，从第几个开始
-			console.log(e.dataLength - i)
 			if(e.dataLength - i < 50){
 				t.hasLoad = true;
 				
@@ -52,9 +50,6 @@ export default {
 					t.reportData = tableData.reportData.slice(0)
 					t.reportHeader = tableData.reportHeader.slice(0)
 					t.pageNum += 1
-
-
-
 					console.log(t.pageNum,t.reportData,'==============')
 
 				})
