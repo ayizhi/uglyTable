@@ -8,13 +8,9 @@
 </template>
 <script>
 import workerConfig from '../assets/js/workerConfig';
-import base from './base';
 import mixinDealData from './mixinDealData';
 import mixinEvent from './mixinEvent';
 import mixinDrawPane from './mixinDrawPane';
-
-    let VerticalLine = base.VerticalLine;
-    let AcrossLine = base.AcrossLine;
 
     export default{
         mixins: [mixinDealData,mixinEvent,mixinDrawPane],
@@ -123,50 +119,19 @@ import mixinDrawPane from './mixinDrawPane';
                 dataHeaders,
                 dataBody, //每次新加进来的data
               
-                acrossLine: new AcrossLine({width: 100}).canvas,
-                verticalLine: new VerticalLine({height: 100}).canvas,
-
-                //数据容器
+         
+               //数据容器
                 fixedLeftUpData: {}, //固定不动的data
                 fixedHeaderData : {},//重点，经过处理后的header数据
                 fixedLeftIndexData: {},//下在x方向上固定的index列
                 fixedBodyData: {},//经过处理后的body数据
                 bodyDataLen,//body现在数据的长度
-                leftHeaderData: null,//处理过后的左头的容器，因为只要处理一次，所以保存下来，
-                rightHeaderData: null,//处理过后的右头的容器，因为只要处理一次，所以保存下来，
-
 
                 //location
                 startX: 0,
                 startY: 0,
                 leftMaxWidth: 0,
                 rightMaxWidth: 0,
-                currentX: undefined,
-                currentY: undefined,
-                
-                //cell canvas cache
-                headerCanvasCache: {},
-                bodyCanvasCache: {},
-                bodyCanvasBgCache: {},
-                bodyCanvasTextCache: {},
-
-                //拖拽           
-                downBorder: 0,
-                rightBorder: 0,
-
-                //webworker计算body的时候需要的配置
-                bodyOptions: {
-                    ratio: t.ratio,
-                    bodyPaneHeight: t.bodyPaneHeight
-                },
-
-                //webworker计算header的时候需要的配置
-                headerOptions: {
-                    fixedColumnsLeft: t.fixedColumnsLeft,
-                    ratio: t.ratio,
-                    headerPaneHeight: t.headerPaneHeight
-                }
-
             }
         },
 
@@ -184,31 +149,15 @@ import mixinDrawPane from './mixinDrawPane';
             t.canvas.height = t.ratio * t.height;
 
 
-           
-
             //左上
-            t.worker.postMessage('dealFixedData',[t.dataHeaders,t.headerOptions])
-            .then((leftHeaderData) => {
-                console.log(leftHeaderData,'---')
-                t.fixedLeftUpData = leftHeaderData.fixedLeftUpData;
-                t.leftMaxWidth = leftHeaderData.width;
-                t.leftHeaderData = leftHeaderData;
-                
-                t.dealLeftBodyData(t.dataBody,t.leftHeaderData)
+            t.dealLeftHeaderData(t.dataHeaders).then((leftHeaderData) => {
+                t.dealLeftBodyData(t.dataBody,leftHeaderData)
             })
 
             //右上
-            t.worker.postMessage('dealHeaderData',[t.dataHeaders,t.headerOptions])
-            .then((rightHeaderData) => {
-                console.log(rightHeaderData,'===')                
-                t.fixedHeaderData = rightHeaderData.fixedHeaderData;
-                t.rightMaxWidth = rightHeaderData.width;
-                t.rightHeaderData = rightHeaderData;
-
-                t.dealRightBodyData(t.dataBody,t.rightHeaderData)
-            
+            t.dealRightHeaderData(t.dataHeaders).then((rightHeaderData) => {
+                t.dealRightBodyData(t.dataBody,rightHeaderData)
             })
-
 
  
             t.run();
@@ -224,8 +173,8 @@ import mixinDrawPane from './mixinDrawPane';
                     let bodyDataLen = dataBody.length;
                     t.bodyDataLen += bodyDataLen;
 
-                    t.dealLeftBodyData(dataBody,t.leftHeaderData)
-                    t.dealRightBodyData(dataBody,t.rightHeaderData)
+                    t.dealLeftBodyData(dataBody,t.fixedLeftUpData)
+                    t.dealRightBodyData(dataBody,t.fixedHeaderData)
                     
                 
             }

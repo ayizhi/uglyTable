@@ -1,4 +1,15 @@
 export default {
+    data(){
+        return {
+            //拖拽           
+            downBorder: 0,
+            rightBorder: 0,
+
+            currentX: undefined,
+            currentY: undefined,
+
+        }
+    },
     methods: {
         //============================ event start ========================
         bindEvent(){

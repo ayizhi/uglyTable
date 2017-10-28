@@ -1,4 +1,23 @@
+import base from './base';
+
+let VerticalLine = base.VerticalLine;
+let AcrossLine = base.AcrossLine;
+
+
 export default {
+    data(){
+        return {
+            //cell canvas cache
+            headerCanvasCache: {},
+            bodyCanvasCache: {},
+            bodyCanvasBgCache: {},
+            bodyCanvasTextCache: {},
+
+            acrossLine: new AcrossLine({width: 100}).canvas,
+            verticalLine: new VerticalLine({height: 100}).canvas,
+
+        }
+    },
     methods: {
         
         //============================ 绘制 start =========================
