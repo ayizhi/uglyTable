@@ -161,8 +161,7 @@ let workerConfig = [
             //main
             let fixedLeftIndexData = {};
 
-            dataBody.map((data,index) => {
-                
+            dataBody.map((data,index) => {           
                 let tmpData = {};
                 let key;
 
@@ -181,7 +180,7 @@ let workerConfig = [
                     let endX = selfStartX + paneWidth;
                     let startY = selfStartY;
                     let endY = startY + bodyPaneHeight * ratio;
-
+                    
                     tmpData[i] = {
                         rowIndex: startIndex,                        
                         field: key,
@@ -194,7 +193,7 @@ let workerConfig = [
                         headerLen: headerLen,                                                                  
                         paneWidth: paneWidth,
                         paneHeight: bodyPaneHeight * ratio,
-                        info: key == 'table_index' ? index + 1 : colData                     
+                        info: key == 'table_index' ? startIndex + 1 : colData                     
                     }
             
                     //reset selfStartX
