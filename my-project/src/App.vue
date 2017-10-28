@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import Data from './canvas/data';
+import Data from '../src/assets/js/data';
 import axios from 'axios'
 import vueCanvas from './canvas/renderCanvas2'
 Mock.mock('/get-data', function(){
