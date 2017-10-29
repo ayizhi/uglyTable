@@ -39,7 +39,6 @@ export default {
 			
 			
 			let i = Math.floor(-e.y/(e.bodyPaneHeight * 2));//当前显示，从第几个开始
-			console.log(e.dataLength - i,'====')
 			if(e.dataLength - i < 950){
 				t.hasLoad = true;
 				
