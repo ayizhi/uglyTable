@@ -4,8 +4,8 @@
      id="canvas" :width="1000" :height="400" :fixed="2"
       @upAndDown="handleUpAndDown"
       :reportData="reportData"
-	  :reportHeader="reportHeader"
-	  :pageNum="pageNum"
+			:reportHeader="reportHeader"
+			:pageNum="pageNum"
      ></vue-canvas>
   </div>
 </template>
@@ -39,7 +39,8 @@ export default {
 			
 			
 			let i = Math.floor(-e.y/(e.bodyPaneHeight * 2));//当前显示，从第几个开始
-			if(e.dataLength - i < 50){
+			console.log(e.dataLength - i,'====')
+			if(e.dataLength - i < 950){
 				t.hasLoad = true;
 				
 				
@@ -54,9 +55,6 @@ export default {
 
 				})
 			}
-
-		
-
 		},
 
 		loadingDataAjax(){
