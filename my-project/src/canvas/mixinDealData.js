@@ -13,6 +13,9 @@ export default {
             fixedLeftIndexData: {},//下在x方向上固定的index列
             fixedBodyData: {},//经过处理后的body数据
 
+            //loading数据controller
+            loadDataController: false,
+
             
             //默认要提交的数据
             defaultPageNumStart,//page初始化页码
@@ -58,6 +61,7 @@ export default {
             return new Promise((resolve) => {
                 //ajax
                 t.loadingDataAjax().then((data) => {
+                    if(!data) return;
                     //setting data
                     let dataHeaders = data.reportHeader;                                    
                     let dataBody = data.reportData;
@@ -97,6 +101,7 @@ export default {
             return new Promise((resolve) => {
                 //ajax     
                 t.loadingDataAjax().then((data) => {
+                    if(!data) return;
 
                     let dataHeaders = data.reportHeader;
                     let dataBody = data.reportData;
@@ -104,6 +109,8 @@ export default {
                     //bodyDataLen                    
                     let bodyDataLen = dataBody.length;
                     t.bodyDataLen += bodyDataLen;
+                    
+
                     t.dealLeftBodyData(dataBody,t.fixedLeftUpData)
                     t.dealRightBodyData(dataBody,t.fixedHeaderData)
                     
@@ -117,12 +124,16 @@ export default {
         loadingDataAjax(){
             const t = this;
             let postData = t.postData;
+
+            if(t.loadDataController) return new Promise((resolve) => {resolve(false)});
+            t.loadDataController = true;
             return new Promise((resolve) => {
                 t.$http({
                     url: t.url,
                     data: postData,
                     method: 'GET'
                 }).then((res) => {
+                    t.loadDataController = false;
                     let reply = res.data.data
                     resolve(reply)
                 })

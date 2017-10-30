@@ -43,6 +43,7 @@ export default {
 		loadMoreController(info){
 			let i = Math.floor(-info.y / (info.bodyPaneHeight * 2));//当前显示，从第几个开始
 			if(info.dataLength - i < 900){
+				console.log(555)
 				return true
 			}
 			return false;
