@@ -86,10 +86,12 @@ import mixinDrawPane from './mixinDrawPane';
                     return []
                 }
             },
-            pageNum: {
+            pageNum: {//必填，由它来管理数据的更新
                 type: Number
             }
         },
+
+
         data(){
             const t = this;
             let dataHeaders = t.reportHeader;
@@ -109,6 +111,8 @@ import mixinDrawPane from './mixinDrawPane';
                 fixedLeftIndexData: {},//下在x方向上固定的index列
                 fixedBodyData: {},//经过处理后的body数据
                 bodyDataLen,//body现在数据的长度
+
+
                 //location
                 startX: 0,
                 startY: 0,
@@ -116,10 +120,12 @@ import mixinDrawPane from './mixinDrawPane';
                 rightMaxWidth: 0,
             }
         },
+
         created(){
             const t = this;
             t.worker = t.$worker.create(workerConfig)
         },
+
         mounted(){
             const t = this;
             t.canvas = document.getElementById(t.id);
@@ -138,6 +144,7 @@ import mixinDrawPane from './mixinDrawPane';
             t.run();
             t.bindEvent();
         },
+
         watch: {
             pageNum(newVal,oldVal){
                     const t = this;
@@ -148,13 +155,12 @@ import mixinDrawPane from './mixinDrawPane';
                     t.dealLeftBodyData(dataBody,t.fixedLeftUpData)
                     t.dealRightBodyData(dataBody,t.fixedHeaderData)
                     
+                    console.log(newVal,oldVal)
                 
             }
         },
+
         methods: {
-      
-    
-        
             render(){
                 const t = this;
                 let leftX = -t.startX ;

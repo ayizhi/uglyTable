@@ -19,6 +19,20 @@ export default {
 
     methods: {
         //============================ dealData start =====================
+        //加载更多数据
+        loadMore(){
+            const t = this;
+        },
+
+        //初始化数据
+        initData(){
+            const t = this;
+            t.fixedLeftUpData = {}; //固定不动的data
+            t.fixedHeaderData = {};//重点，经过处理后的header数据
+            t.fixedLeftIndexData = {};//下在x方向上固定的index列
+            t.fixedBodyData = {};//经过处理后的body数据
+            t.bodyDataLen = 0;//body现在数据的长度
+        },
 
         //处理左上数据
         dealLeftHeaderData(dataHeaders){
