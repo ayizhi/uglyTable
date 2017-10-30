@@ -1,6 +1,54 @@
 
 
 let workerConfig = [
+
+    //移动鼠标的时候，获取当前cell
+    //todo: 这个效率反而慢，为啥
+    {
+        message: 'getCurrentCell',
+        func(info){
+            let row,col;
+            let x = info.x,
+                y = info.y,
+                ratio = info.ratio,
+                startX = info.startX,
+                startY = info.startY,
+                headerPaneHeight = info.headerPaneHeight,
+                bodyPaneHeight = info.bodyPaneHeight,
+                leftMaxWidth = info.leftMaxWidth,
+                fixedBodyData = info.fixedBodyData;
+            
+            x = x * ratio + -startX - leftMaxWidth;
+
+            
+
+            //第几行
+            row = Math.floor(((-startY / ratio) + y - headerPaneHeight) / bodyPaneHeight);
+            //第几列
+            let key;
+            if(fixedBodyData[row]){
+                for(key in fixedBodyData[row]){
+                    let cellPa = fixedBodyData[row][key];
+                    let startX = cellPa.startX;
+                    let endX = cellPa.endX;
+                    
+                    if(x > startX && x < endX){
+                        let k;
+                        for(k in cellPa.children){
+                            let cell = cellPa.children[k];
+                            let startX = cell.startX;
+                            let endX = cell.endX;
+                            if(x > startX && x < endX){
+                                col = k;
+                            }
+                        }
+                    }
+                }
+            }
+            return {row,col}   
+        }
+    },
+
     //处理左上数据
     {
         message: 'dealFixedData',
@@ -231,6 +279,7 @@ let workerConfig = [
                 selfStartX = 0;
                 selfStartY = startIndex * bodyPaneHeight * ratio;
 
+
                 for(key in fixedHeaderData){
                     let colPreSet = fixedHeaderData[key]; 
                     let colData = data[key] || '';
@@ -252,10 +301,12 @@ let workerConfig = [
                     tmpData[partIndex] = tmpData[partIndex] == undefined ? {} : tmpData[partIndex];
                     if(i % partLen === 0){
                         tmpData[partIndex].startX = startX;                   
-                    }else if(i % partLen == partLen - 1){                        
-                        tmpData[partIndex].endX = endX;                   
+                    }else{
+                        tmpData[partIndex].endX = (endX > (tmpData[partIndex].endX || 0) ) 
+                        ? endX
+                        : tmpData[partIndex].endX
                     };
-                                                    
+                      
                     tmpData[partIndex].children = tmpData[partIndex].children == undefined ? {} : tmpData[partIndex].children;                                     
                     tmpData[partIndex].children[i] = {
                         rowIndex: startIndex,                        

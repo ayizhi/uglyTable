@@ -10,6 +10,8 @@ export default {
 
             currentCell: undefined, 
 
+            mouseDown: false,//检测鼠标是否拖动
+
         }
     },
     methods: {
@@ -28,6 +30,7 @@ export default {
                 draging = true;
                 dragStartY = e.clientY;
                 dragStartX = e.clientX;
+                t.mouseDown = true;
             }
 
             document.onmousemove = (e) => {
@@ -85,7 +88,8 @@ export default {
             }
 
             document.onmouseup = (e) => {
-                draging = false;                 
+                draging = false;     
+                t.mouseDown = false;            
             }
 
             //鼠标当前坐标
@@ -106,37 +110,56 @@ export default {
         
         //获取当前鼠标附在那个cell上
         getCurrentCell(x,y){
-            const t = this;
-            x = x * t.ratio - t.leftMaxWidth;
+            const t = this;            
+            //如果正在拖动／滚动 ，则不计算
+            if(t.mouseDown) return;
+            let col,row;
+            x = x * t.ratio + -t.startX - t.leftMaxWidth;
             let timer = setTimeout(() => {
                 //第几行
-                let row = Math.floor(((-t.startY / t.ratio) + y - t.headerPaneHeight) / t.bodyPaneHeight);
-                console.log(row)
+                row = Math.floor(((-t.startY / t.ratio) + y - t.headerPaneHeight) / t.bodyPaneHeight);
 
                 //第几列
                 if(row < 0) return;
-                console.log(t.fixedBodyData[row])
                 Object.keys(t.fixedBodyData[row]) && Object.keys(t.fixedBodyData[row]).map((key) => {
                     let cellPa = t.fixedBodyData[row][key];
                     let startX = cellPa.startX;
                     let endX = cellPa.endX;
                     
-                    if(x > startX && x < endX){
+                    if(x >= startX && x < endX){
                         Object.keys(cellPa.children).map((k) => {
                             let cell = cellPa.children[k];
-                            let startX = cell.startX;
-                            let endX = cell.endX;
-                            if(x > startX && x < endX){
-                                console.log(key,k)
+                            let cellStartX = cell.startX;
+                            let cellEndX = cell.endX;
+
+                            if(x >= cellStartX && x < cellEndX){
+                                col = k;
                             }
                         })
                     }
                 })
 
+                console.log(row,col)
                 clearTimeout(timer)
-                
             },1)
-    
+
+            // let info = {
+            //     x,
+            //     y,
+            //     ratio: t.ratio,
+            //     startX: t.startX,
+            //     startY: t.startY,
+            //     headerPaneHeight: t.headerPaneHeight,
+            //     bodyPaneHeight: t.bodyPaneHeight,
+            //     leftMaxWidth: t.leftMaxWidth,
+            //     fixedBodyData: t.fixedBodyData
+            // }
+
+            // setTimeout(() => {
+            //     t.worker.postMessage('getCurrentCell',[info]).then((data) => {
+            //         console.log(data,'==')
+            //     })
+            // },1)
         }
 
         //============================ event end ==========================
