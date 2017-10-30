@@ -10,8 +10,9 @@ import workerConfig from '../assets/js/workerConfig';
 import mixinDealData from './mixinDealData';
 import mixinEvent from './mixinEvent';
 import mixinDrawPane from './mixinDrawPane';
+import mixinUtils from './mixinUtils';
     export default{
-        mixins: [mixinDealData,mixinEvent,mixinDrawPane],
+        mixins: [mixinDealData,mixinEvent,mixinDrawPane,mixinUtils],
         props: {
             id: {
                 type: String,

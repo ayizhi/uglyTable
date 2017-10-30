@@ -103,7 +103,6 @@ export default {
             let endY = obj.endY;
 
             //body单元格cache
-            // t.bodyCanvasCache[rowIndex] = t.bodyCanvasCache[rowIndex] == undefined ? {} : t.bodyCanvasCache[rowIndex];
             t.bodyCanvasCache[rowIndex] = t.bodyCanvasCache[rowIndex] || {};
             t.bodyCanvasTextCache[rowIndex] = t.bodyCanvasTextCache[rowIndex] || {};
             if(t.bodyCanvasCache[rowIndex][field] == undefined){

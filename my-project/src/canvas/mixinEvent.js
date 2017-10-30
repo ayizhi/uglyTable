@@ -8,6 +8,8 @@ export default {
             currentX: undefined,
             currentY: undefined,
 
+            currentCell: undefined, 
+
         }
     },
     methods: {
@@ -20,11 +22,9 @@ export default {
             let canvas = document.querySelector('#' + t.id)
 
             //底边界
-            t.downBorder = (-t.fixedBodyData.length * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+            t.calculateDownBorder();
 
-            document.onmousedown = (e) => {
-                console.log('down')                
-                
+            document.onmousedown = (e) => {                
                 draging = true;
                 dragStartY = e.clientY;
                 dragStartX = e.clientX;
@@ -85,8 +85,7 @@ export default {
             }
 
             document.onmouseup = (e) => {
-                draging = false;    
-                console.log('up')                
+                draging = false;                 
             }
 
             //鼠标当前坐标
@@ -95,16 +94,51 @@ export default {
             t.canvas.onmousemove = function(e){
                 t.currentX = e.offsetX;
                 t.currentY = e.offsetY;
+
+                t.getCurrentCell(t.currentX,t.currentY)
+
             }
             t.canvas.onmouseleave = function(e){
                 t.currentX = undefined;
                 t.currentY = undefined;
             }
-
-
-
         },
-        //============================ event end ==========================
+        
+        //获取当前鼠标附在那个cell上
+        getCurrentCell(x,y){
+            const t = this;
+            x = x * t.ratio - t.leftMaxWidth;
+            let timer = setTimeout(() => {
+                //第几行
+                let row = Math.floor(((-t.startY / t.ratio) + y - t.headerPaneHeight) / t.bodyPaneHeight);
+                console.log(row)
 
+                //第几列
+                if(row < 0) return;
+                console.log(t.fixedBodyData[row])
+                Object.keys(t.fixedBodyData[row]) && Object.keys(t.fixedBodyData[row]).map((key) => {
+                    let cellPa = t.fixedBodyData[row][key];
+                    let startX = cellPa.startX;
+                    let endX = cellPa.endX;
+                    
+                    if(x > startX && x < endX){
+                        Object.keys(cellPa.children).map((k) => {
+                            let cell = cellPa.children[k];
+                            let startX = cell.startX;
+                            let endX = cell.endX;
+                            if(x > startX && x < endX){
+                                console.log(key,k)
+                            }
+                        })
+                    }
+                })
+
+                clearTimeout(timer)
+                
+            },1)
+    
+        }
+
+        //============================ event end ==========================
     }
 }

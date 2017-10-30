@@ -38,7 +38,6 @@ export default {
         }
     },
 
-
     async mounted(){
         const t = this;
         await t.initData().then((data) => {})
@@ -187,7 +186,7 @@ export default {
                         if(key  == dataBody.length - 1){
                             //更新右边边界
                             console.log(t.fixedLeftIndexData,'---|---');            
-                            t.downBorder = (-(Object.keys(t.fixedLeftIndexData).length) * t.bodyPaneHeight - t.headerPaneHeight) * t.ratio + t.height * t.ratio
+                            t.calculateDownBorder();                            
                         }
                     }
                 })
