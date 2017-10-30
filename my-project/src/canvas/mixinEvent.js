@@ -22,7 +22,8 @@ export default {
             let draging = false;
             let dragStartY = 0;
             let dragStartX = 0;
-            let canvas = document.querySelector('#' + t.id)
+            let canvas = document.querySelector('#' + t.id);
+            let distYs = [];
 
             //底边界
             t.calculateDownBorder();
@@ -32,6 +33,7 @@ export default {
                 dragStartY = e.clientY;
                 dragStartX = e.clientX;
                 t.mouseDown = true;
+                distYs = [];
             }
 
             document.onmousemove = (e) => {
@@ -42,7 +44,8 @@ export default {
                 if(t.startY > 0) {
                     t.startY = 0;
                 }else{
-                    let tmpY = t.startY + (e.clientY - dragStartY)
+                    let distY = e.clientY - dragStartY;
+                    let tmpY = t.startY + distY;
                     if(tmpY <= 0){
                         t.startY = tmpY
                         dragStartY = e.clientY
@@ -59,6 +62,8 @@ export default {
 
                         t.loadMoreData(info)
                     };
+
+                    distYs.push(distY)                    
 
 
                     //滚到最下面
@@ -90,13 +95,38 @@ export default {
 
             document.onmouseup = (e) => {
                 draging = false;     
-                t.mouseDown = false;            
+                t.mouseDown = false;      
+                
+                //对y轴进行鼠标抬起后的延迟
+                // console.log(distYs,t.startY)
+                let yLen = distYs.length
+                if(yLen < 10){
+                    let distY = distYs[yLen - 1];
+                    let step = 10;
+                    let timer = setInterval(() => {
+                        // console.log(step,t.startY)
+                        if(distY < 0){
+                            t.startY -= step;
+                        }else if(distY > 0){
+                            t.startY += step;
+                        }else{
+                            clearInterval(timer);
+                            distYs = [];                            
+                        }
+                        step -= 2
+                        if(step <= 0){
+                            clearInterval(timer);
+                            distYs = [];                                                        
+                        }                        
+                    },10)
+                }
             }
 
             //鼠标当前坐标
             let canvasLeft = t.canvas.offsetLeft;
             let canvasTop = t.canvas.offsetTop;
             t.canvas.onmousemove = function(e){
+ 
                 t.currentX = e.offsetX;
                 t.currentY = e.offsetY;
 
