@@ -44,14 +44,16 @@ export default {
                         dragStartY = e.clientY
 
                         //上下滚动
-
-                        t.$emit('upAndDown',{
+                        let info = {
                             y: t.startY,
                             downBorder: t.downBorder,
                             ratio: t.ratio,
                             bodyPaneHeight: t.bodyPaneHeight,
                             dataLength: t.bodyDataLen
-                        })
+                        }
+
+
+                        t.loadMoreData(info)
                     };
 
 

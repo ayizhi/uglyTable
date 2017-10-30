@@ -86,34 +86,45 @@ import mixinDrawPane from './mixinDrawPane';
                     return []
                 }
             },
-            pageNum: {//必填，由它来管理数据的更新
-                type: Number
-            }
+
+            //data
+            url: {
+                type: String,
+                default: () => {
+                    return  ''
+                }
+            },
+
+            externalData: {
+                type: Object,
+                default: () => {
+                    return {}
+                }
+            },
+
+            loadMoreController: {
+                type: Function,
+                default: () => {
+                    return function(){}
+                }
+            },
+
         },
 
 
         data(){
             const t = this;
-            let dataHeaders = t.reportHeader;
-            let dataBody = t.reportData;
-            let bodyDataLen = dataBody.length;
     
             return {
                 canvas: null,
                 ctx: null,
-                dataHeaders,
-                dataBody, //每次新加进来的data
-              
-         
-               //数据容器
-                fixedLeftUpData: {}, //固定不动的data
-                fixedHeaderData : {},//重点，经过处理后的header数据
-                fixedLeftIndexData: {},//下在x方向上固定的index列
-                fixedBodyData: {},//经过处理后的body数据
-                bodyDataLen,//body现在数据的长度
+
+                //body现在数据的长度,需要每次加载的时候更新，并且外部判定加载条件的时候不会用到
+                bodyDataLen: 0,
+                
 
 
-                //location
+                //location relative
                 startX: 0,
                 startY: 0,
                 leftMaxWidth: 0,
@@ -132,32 +143,10 @@ import mixinDrawPane from './mixinDrawPane';
             t.ctx = t.canvas.getContext('2d');
             t.canvas.width = t.ratio * t.width;
             t.canvas.height = t.ratio * t.height;
-            //左上
-            t.dealLeftHeaderData(t.dataHeaders).then((leftHeaderData) => {
-                t.dealLeftBodyData(t.dataBody,leftHeaderData)
-            })
-            //右上
-            t.dealRightHeaderData(t.dataHeaders).then((rightHeaderData) => {
-                t.dealRightBodyData(t.dataBody,rightHeaderData)
-            })
- 
+
+
             t.run();
             t.bindEvent();
-        },
-
-        watch: {
-            pageNum(newVal,oldVal){
-                    const t = this;
-                    let dataHeaders = t.reportHeader;
-                    let dataBody = t.reportData;
-                    let bodyDataLen = dataBody.length;
-                    t.bodyDataLen += bodyDataLen;
-                    t.dealLeftBodyData(dataBody,t.fixedLeftUpData)
-                    t.dealRightBodyData(dataBody,t.fixedHeaderData)
-                    
-                    console.log(newVal,oldVal)
-                
-            }
         },
 
         methods: {
@@ -210,6 +199,7 @@ import mixinDrawPane from './mixinDrawPane';
                         })
                     })
                 })
+
                 //leftIndex
                 Object.keys(t.fixedLeftIndexData).map((index) => {
                     let item  = t.fixedLeftIndexData[index]
@@ -232,6 +222,7 @@ import mixinDrawPane from './mixinDrawPane';
                         ) 
                     }
                 })
+
                 //画右边头部
                 for(let key in t.fixedHeaderData){
                     let cell = t.fixedHeaderData[key];
@@ -251,6 +242,7 @@ import mixinDrawPane from './mixinDrawPane';
                          cell.startX + t.startX + t.leftMaxWidth , cell.startY, cell.paneWidth,t.headerPaneHeight * t.ratio
                     ) 
                 }
+
                 //画固定头部left up
                 for(let key in t.fixedLeftUpData){
                     let cell = t.fixedLeftUpData[key];

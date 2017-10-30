@@ -1,7 +1,25 @@
 export default {
     data(){
         const t = this;
+
+        let defaultPageNumStart = 1;
+        
+
         return {
+                 
+            //数据容器
+            fixedLeftUpData: {}, //固定不动的data
+            fixedHeaderData : {},//重点，经过处理后的header数据
+            fixedLeftIndexData: {},//下在x方向上固定的index列
+            fixedBodyData: {},//经过处理后的body数据
+
+            
+            //默认要提交的数据
+            defaultPageNumStart,//page初始化页码
+            postData: {
+                pageNum: t.defaultPageNumStart
+            },
+             
             //webworker计算body的时候需要的配置
             bodyOptions: {
                 ratio: t.ratio,
@@ -17,12 +35,15 @@ export default {
         }
     },
 
+
+    async mounted(){
+        const t = this;
+        await t.initData().then((data) => {})
+
+    },
+
     methods: {
         //============================ dealData start =====================
-        //加载更多数据
-        loadMore(){
-            const t = this;
-        },
 
         //初始化数据
         initData(){
@@ -32,7 +53,83 @@ export default {
             t.fixedLeftIndexData = {};//下在x方向上固定的index列
             t.fixedBodyData = {};//经过处理后的body数据
             t.bodyDataLen = 0;//body现在数据的长度
+            t.postData.pageNum = t.defaultPageNumStart;
+            
+            return new Promise((resolve) => {
+                //ajax
+                t.loadingDataAjax().then((data) => {
+                    //setting data
+                    let dataHeaders = data.reportHeader;                                    
+                    let dataBody = data.reportData;
+
+                    //bodyDataLen
+                    t.bodyDataLen = dataBody.length;    
+                    
+                    if(Object.keys(t.fixedHeaderData).length == 0){ //如果从来没加载过
+                        //左上
+                        t.dealLeftHeaderData(dataHeaders).then(() => {
+                            t.dealLeftBodyData(dataBody,t.fixedLeftUpData)
+                        })
+                        //右上
+                        t.dealRightHeaderData(dataHeaders).then(() => {
+                            t.dealRightBodyData(dataBody,t.fixedHeaderData)
+                        })
+                    }else{
+                        t.dealLeftBodyData(dataBody,t.fixedLeftUpData)
+                        t.dealRightBodyData(dataBody,t.fixedHeaderData)
+                    }
+
+                    resolve(data)
+                })
+            })
         },
+
+
+        //加载更多数据
+        loadMoreData(info){
+            const t = this;
+            if(!t.loadMoreController(info)){
+                return;
+            }
+
+            t.postData.pageNum++;
+
+            return new Promise((resolve) => {
+                //ajax     
+                t.loadingDataAjax().then((data) => {
+
+                    let dataHeaders = data.reportHeader;
+                    let dataBody = data.reportData;
+
+                    //bodyDataLen                    
+                    let bodyDataLen = dataBody.length;
+                    t.bodyDataLen += bodyDataLen;
+                    t.dealLeftBodyData(dataBody,t.fixedLeftUpData)
+                    t.dealRightBodyData(dataBody,t.fixedHeaderData)
+                    
+                    resolve(data)
+                })   
+            })            
+        },
+
+
+        //加载数据的ajax
+        loadingDataAjax(){
+            const t = this;
+            let postData = t.postData;
+            return new Promise((resolve) => {
+                t.$http({
+                    url: t.url,
+                    data: postData,
+                    method: 'GET'
+                }).then((res) => {
+                    let reply = res.data.data
+                    resolve(reply)
+                })
+			})
+		},
+
+
 
         //处理左上数据
         dealLeftHeaderData(dataHeaders){
@@ -105,7 +202,7 @@ export default {
                     for(let key in rightBodyData.fixedBodyData){
                         t.fixedBodyData[+key + +len] = rightBodyData.fixedBodyData[key]
 
-                        if(key  == t.dataBody.length - 1){
+                        if(key  == dataBody.length - 1){
                             //更新右边边界
                             console.log(t.fixedBodyData,'===|===');            
                         }

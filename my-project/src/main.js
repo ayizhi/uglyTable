@@ -7,6 +7,10 @@ import router from './router'
 import VueWorker from 'vue-worker';
 Vue.use(VueWorker)
 
+import axios from 'axios';
+Vue.http = axios;
+Vue.prototype.$http = axios;
+
 
 Vue.config.productionTip = false
 

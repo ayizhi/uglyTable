@@ -1,11 +1,15 @@
 <template>
   <div id="app">
     <vue-canvas
-     id="canvas" :width="1000" :height="400" :fixed="2"
-      @upAndDown="handleUpAndDown"
-      :reportData="reportData"
-			:reportHeader="reportHeader"
-			:pageNum="pageNum"
+	id="canvas" 
+	:width="1000" 
+	:height="400" 
+	:fixed="2"
+	:loadMoreController="loadMoreController"
+	:url="url"
+	:externalData="externalData"
+
+
      ></vue-canvas>
   </div>
 </template>
@@ -24,6 +28,9 @@ export default {
     data(){
 		const t =  this;
 		return {
+			url: '/get-data',
+			externalData: {},//post请求需要额外拼装的数据
+
 			pageNum: 1,
 			totalPageNum: 1,
 			limit: 500,
@@ -33,37 +40,14 @@ export default {
 		}
     },
     methods: {
-		handleUpAndDown(e){
-			const t = this;
-			if(t.hasLoad) return;
-			
-			
-			let i = Math.floor(-e.y/(e.bodyPaneHeight * 2));//当前显示，从第几个开始
-			if(e.dataLength - i < 950){
-				t.hasLoad = true;
-				
-				
-				t.loadingDataAjax().then((data) => {
-					t.hasLoad = false;
-					console.log(data.data)
-					let tableData = data.data.data
-					t.reportData = tableData.reportData.slice(0)
-					t.reportHeader = tableData.reportHeader.slice(0)
-					t.pageNum += 1
-					console.log(t.pageNum,t.reportData,'==============')
-
-				})
+		loadMoreController(info){
+			let i = Math.floor(-info.y / (info.bodyPaneHeight * 2));//当前显示，从第几个开始
+			if(info.dataLength - i < 900){
+				return true
 			}
+			return false;
 		},
-
-		loadingDataAjax(){
-			const t = this;
-			return new Promise((resolve) => {
-				axios.get('/get-data').then((data) => {
-					resolve(data)
-				});	
-			})
-		}
+		
     },
 
     components: {
