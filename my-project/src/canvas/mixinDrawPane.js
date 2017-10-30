@@ -13,6 +13,11 @@ export default {
             bodyCanvasBgCache: {},
             bodyCanvasTextCache: {},
 
+            //============= event related cache start ===================
+            bodyHoverCanvasBgCache: {},
+            bodyHoverCanvasTextCache: {},
+            //============= event related cache end ===================
+
             acrossLine: new AcrossLine({width: 100}).canvas,
             verticalLine: new VerticalLine({height: 100}).canvas,
 
@@ -97,21 +102,68 @@ export default {
             let rowIndex = obj.rowIndex;//行index
             let tWidth = obj.paneWidth;
             let tHeight = obj.paneHeight;
+            let headerLen = obj.headerLen;
             let startX = obj.startX;
             let endX = obj.endX;
             let startY = obj.startY;
             let endY = obj.endY;
+            
 
             //body单元格cache
             t.bodyCanvasCache[rowIndex] = t.bodyCanvasCache[rowIndex] || {};
             t.bodyCanvasTextCache[rowIndex] = t.bodyCanvasTextCache[rowIndex] || {};
+            
+            // let currentRowIndex,currentCol,currentCellEvent;
+            // if(t.currentBodyCell){
+            //     currentRowIndex = t.currentBodyCell.row;
+            //     currentCol = t.currentBodyCell.col;
+            //     currentCellEvent = t.currentBodyCell.event;
+            // }
+            
+            // if(currentRowIndex == rowIndex && field == currentCol){
+            //     if(currentCellEvent == 'hover'){
+
+            //     }
+            // };
+
             if(t.bodyCanvasCache[rowIndex][field] == undefined){
                 let canvas = document.createElement('canvas');
                 let ctx = canvas.getContext('2d');
                 canvas.width = tWidth;
                 canvas.height = tHeight;
 
-                //背景缓存
+                (async() => {
+                    //背景缓存
+                    await t.drawBodyBgCacheCanvas(field,tWidth,tHeight,index,headerLen).then((cellBgCanvas) => {
+                        ctx.drawImage(cellBgCanvas,0,0)
+                    })
+
+                    //字体缓存
+                    await t.drawBodyTextCacheCanvas(field,tWidth,tHeight,rowIndex,info,type).then((cellTextCanvas) => {
+                        if(!cellTextCanvas) return;
+                        ctx.drawImage(cellTextCanvas,0,0)                    
+                    })
+                })()
+               
+            
+
+
+                t.bodyCanvasCache[rowIndex][field] = {
+                    canvas,
+                    startX,
+                    endX,
+                    startY,
+                    endY,
+                }
+            }
+    
+            return t.bodyCanvasCache[rowIndex][field].canvas  
+        },
+
+        drawBodyBgCacheCanvas(field,tWidth,tHeight,index,headerLen){
+            return new Promise((resolve) => {
+
+                const t = this;
                 if(t.bodyCanvasBgCache[field] == undefined){
                     let bgCanvas = document.createElement('canvas');
                     let bgCtx = bgCanvas.getContext('2d');
@@ -134,7 +186,7 @@ export default {
                         1,
                         tHeight)
                     };
-                    if(index == obj.headerLen - 1){                 
+                    if(index == headerLen - 1){                 
                         bgCtx.drawImage(t.verticalLine,
                         tWidth - 1,
                         0,
@@ -146,10 +198,16 @@ export default {
                 }
                 
                 let cellBgCanvas = t.bodyCanvasBgCache[field];  
-                ctx.drawImage(cellBgCanvas,0,0)
-                
-                //字体缓存
-                if(t.bodyCanvasTextCache[rowIndex][field] == undefined && obj.info != ''){
+                resolve(cellBgCanvas)
+            })
+        },
+
+        drawBodyTextCacheCanvas(field,tWidth,tHeight,rowIndex,info,type){
+            const t = this;
+          
+          
+            return new Promise((resolve) => {
+                if(t.bodyCanvasTextCache[rowIndex][field] == undefined && info != ''){
                     
                     let textCanvas = document.createElement('canvas');
                     let textCtx = textCanvas.getContext('2d');
@@ -158,7 +216,7 @@ export default {
 
                     //text default color
                     textCtx.font = t.fontSize * t.ratio + 'px Arif';
-                    if(obj.type == 'header'){
+                    if(type == 'header'){
                         textCtx.fillStyle = '#9e9ea6';
                     }else{
                         textCtx.fillStyle = '#555459';
@@ -167,34 +225,22 @@ export default {
                     textCtx.textAlign = t.textAglin;    //start, end, left, right or center
                     textCtx.textBaseline = 'middle';
                     if(t.textAglin == 'center'){
-                        textCtx.fillText(obj.info,tWidth/2,tHeight/2)
+                        textCtx.fillText(info,tWidth/2,tHeight/2)
                     }else if(t.textAglin == 'left'){
-                        textCtx.fillText(obj.info,t.padding,tHeight/2)                   
+                        textCtx.fillText(info,t.padding,tHeight/2)                   
                     }
 
                     t.bodyCanvasTextCache[rowIndex][field] = textCanvas
                 }
 
-                if(obj.info != ''){
+                if(info != ''){
                     let cellTextCanvas = t.bodyCanvasTextCache[rowIndex][field];
-                    ctx.drawImage(cellTextCanvas,0,0)
+                    resolve((cellTextCanvas))
+                    return;
                 }
-            
-
-
-                t.bodyCanvasCache[rowIndex][field] = {
-                    canvas,
-                    startX,
-                    endX,
-                    startY,
-                    endY,
-                }
-            }
-
-
-    
-            return t.bodyCanvasCache[rowIndex][field].canvas  
-        },
+                resolve()
+            })
+        }
 
 
 

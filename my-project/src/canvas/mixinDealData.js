@@ -181,14 +181,14 @@ export default {
                 let currentData = dataBody.slice(i * splitLen , (i + 1) * splitLen);
                 t.worker.postMessage('dealIndexData',[currentData,leftHeaderData,t.bodyOptions,i * splitLen])
                 .then((leftBodyData) => {
-                    for(let key in leftBodyData.fixedLeftIndexData){
+                    Object.keys(leftBodyData.fixedLeftIndexData).map((key) => {
                         t.fixedLeftIndexData[+key + +len] = leftBodyData.fixedLeftIndexData[key]
                         if(key  == dataBody.length - 1){
                             //更新右边边界
                             console.log(t.fixedLeftIndexData,'---|---');            
                             t.calculateDownBorder();                            
                         }
-                    }
+                    })                    
                 })
             }
         },
@@ -208,15 +208,13 @@ export default {
                 
                 t.worker.postMessage('dealBodyData',[currentData,rightHeaderData,t.bodyOptions,i * splitLen])
                 .then((rightBodyData) => {
-            
-                    for(let key in rightBodyData.fixedBodyData){
+                    Object.keys(rightBodyData.fixedBodyData).map((key) => {
                         t.fixedBodyData[+key + +len] = rightBodyData.fixedBodyData[key]
-
                         if(key  == dataBody.length - 1){
                             //更新右边边界
                             console.log(t.fixedBodyData,'===|===');            
                         }
-                    }
+                    })                    
                 })
             }
         },

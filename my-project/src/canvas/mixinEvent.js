@@ -8,7 +8,8 @@ export default {
             currentX: undefined,
             currentY: undefined,
 
-            currentCell: undefined, 
+            //鼠标当前的cell，body
+            currentBodyCell: undefined, 
 
             mouseDown: false,//检测鼠标是否拖动
 
@@ -105,6 +106,7 @@ export default {
             t.canvas.onmouseleave = function(e){
                 t.currentX = undefined;
                 t.currentY = undefined;
+                t.currentBodyCell = undefined;
             }
         },
         
@@ -121,7 +123,7 @@ export default {
 
                 //第几列
                 if(row < 0) return;
-                Object.keys(t.fixedBodyData[row]) && Object.keys(t.fixedBodyData[row]).map((key) => {
+                t.fixedBodyData[row] && Object.keys(t.fixedBodyData[row]).map((key) => {
                     let cellPa = t.fixedBodyData[row][key];
                     let startX = cellPa.startX;
                     let endX = cellPa.endX;
@@ -133,13 +135,17 @@ export default {
                             let cellEndX = cell.endX;
 
                             if(x >= cellStartX && x < cellEndX){
-                                col = k;
+                                col = cell.field;
                             }
                         })
                     }
                 })
 
-                console.log(row,col)
+                t.currentBodyCell = {
+                    row,
+                    col,
+                    event: 'hover'
+                } 
                 clearTimeout(timer)
             },1)
 

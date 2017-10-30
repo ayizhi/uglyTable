@@ -165,7 +165,8 @@ import mixinUtils from './mixinUtils';
                     endIndex,
                     rightX,
                     leftX
-                }
+                };
+
                  //画主body,分片
                 Object.keys(t.fixedBodyData).map((index) => {
                     let item = t.fixedBodyData[index]
@@ -199,14 +200,14 @@ import mixinUtils from './mixinUtils';
                             ) 
                         })
                     })
-                })
+                });
 
                 //leftIndex
                 Object.keys(t.fixedLeftIndexData).map((index) => {
                     let item  = t.fixedLeftIndexData[index]
                     if(index < startIndex || index > endIndex) return;
                 
-                    for(let key in item){
+                    Object.keys(item).map((key) => {
                         let cell = item[key];
                         let c = t.drawBodyPane({
                             field: cell.field,
@@ -221,14 +222,14 @@ import mixinUtils from './mixinUtils';
                         t.ctx.drawImage(c,
                             cell.startX, cell.startY + t.startY + t.headerPaneHeight * t.ratio
                         ) 
-                    }
-                })
+                    })                    
+                });
 
                 //画右边头部
-                for(let key in t.fixedHeaderData){
+                Object.keys(t.fixedHeaderData).map((key) => {
                     let cell = t.fixedHeaderData[key];
                     if(cell.startX > rightX || cell.endX < leftX){
-                        continue;
+                        return;
                     }
                     let c = t.drawHeaderPane({
                         field: cell.field,
@@ -242,10 +243,12 @@ import mixinUtils from './mixinUtils';
                     t.ctx.drawImage(c,
                          cell.startX + t.startX + t.leftMaxWidth , cell.startY, cell.paneWidth,t.headerPaneHeight * t.ratio
                     ) 
-                }
+            
+                });
+                
 
                 //画固定头部left up
-                for(let key in t.fixedLeftUpData){
+                Object.keys(t.fixedLeftUpData).map((key) => {
                     let cell = t.fixedLeftUpData[key];
                     let c = t.drawHeaderPane({
                         field: cell.field,
@@ -259,8 +262,9 @@ import mixinUtils from './mixinUtils';
                     t.ctx.drawImage(c,
                         cell.startX, cell.startY, cell.paneWidth,t.headerPaneHeight * t.ratio
                     ) 
-                }
+                })
             },
+
             run(){
                 const t = this;
                 const _run = () => {
