@@ -99,12 +99,11 @@ export default {
                 
                 //对y轴进行鼠标抬起后的延迟
                 // console.log(distYs,t.startY)
-                let yLen = distYs.length
+                let yLen = distYs.length;
                 if(yLen < 10){
                     let distY = distYs[yLen - 1];
-                    let step = 10;
+                    let step = 50;
                     let timer = setInterval(() => {
-                        // console.log(step,t.startY)
                         if(distY < 0){
                             t.startY -= step;
                         }else if(distY > 0){
@@ -113,14 +112,16 @@ export default {
                             clearInterval(timer);
                             distYs = [];                            
                         }
-                        step -= 2
+                        step -= 7;
                         if(step <= 0){
                             clearInterval(timer);
                             distYs = [];                                                        
                         }                        
-                    },10)
+                    },1)
                 }
             }
+
+
 
             //鼠标当前坐标
             let canvasLeft = t.canvas.offsetLeft;
