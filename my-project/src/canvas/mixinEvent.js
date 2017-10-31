@@ -97,28 +97,28 @@ export default {
                 draging = false;     
                 t.mouseDown = false;      
                 
-                //对y轴进行鼠标抬起后的延迟
-                // console.log(distYs,t.startY)
-                let yLen = distYs.length;
-                if(yLen < 10){
-                    let distY = distYs[yLen - 1];
-                    let step = 50;
-                    let timer = setInterval(() => {
-                        if(distY < 0){
-                            t.startY -= step;
-                        }else if(distY > 0){
-                            t.startY += step;
-                        }else{
-                            clearInterval(timer);
-                            distYs = [];                            
-                        }
-                        step -= 7;
-                        if(step <= 0){
-                            clearInterval(timer);
-                            distYs = [];                                                        
-                        }                        
-                    },1)
-                }
+                // //对y轴进行鼠标抬起后的延迟
+                // // console.log(distYs,t.startY)
+                // let yLen = distYs.length;
+                // if(yLen < 10){
+                //     let distY = distYs[yLen - 1];
+                //     let step = 50;
+                //     let timer = setInterval(() => {
+                //         if(distY < 0){
+                //             t.startY -= step;
+                //         }else if(distY > 0){
+                //             t.startY += step;
+                //         }else{
+                //             clearInterval(timer);
+                //             distYs = [];                            
+                //         }
+                //         step -= 7;
+                //         if(step <= 0){
+                //             clearInterval(timer);
+                //             distYs = [];                                                        
+                //         }                        
+                //     },1)
+                // }
             }
 
 
