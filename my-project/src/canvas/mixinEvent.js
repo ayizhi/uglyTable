@@ -24,80 +24,126 @@ export default {
             let dragStartX = 0;
             let canvas = document.querySelector('#' + t.id);
             let distYs = [];
+            //鼠标当前坐标
+            let canvasLeft = t.canvas.offsetLeft;
+            let canvasTop = t.canvas.offsetTop;
 
             //底边界
             t.calculateDownBorder();
 
-            document.onmousedown = (e) => {                
+            t.canvas.onmousedown = (e) => {                
                 draging = true;
                 dragStartY = e.clientY;
                 dragStartX = e.clientX;
                 t.mouseDown = true;
-                distYs = [];
             }
 
-            document.onmousemove = (e) => {
+            t.canvas.onmousemove = (e) => {
+                t.currentX = e.offsetX;
+                t.currentY = e.offsetY;
+
+                //得到当前鼠标落在body得哪个格子里
+                t.getCurrentCell(t.currentX,t.currentY)
                 
                 if(!draging) return
 
-                //针对y
-                if(t.startY > 0) {
-                    t.startY = 0;
-                }else{
-                    let distY = e.clientY - dragStartY;
-                    let tmpY = t.startY + distY;
-                    if(tmpY <= 0){
-                        t.startY = tmpY
-                        dragStartY = e.clientY
+                //真对Y
+                dragStartY = t.dealMouseMoveY(e,dragStartY);
+            
+                //针对x
+                dragStartX = t.dealMouseMoveX(e,dragStartX);
+            }
 
-                        //上下滚动
-                        let info = {
-                            y: t.startY,
-                            downBorder: t.downBorder,
-                            ratio: t.ratio,
-                            bodyPaneHeight: t.bodyPaneHeight,
-                            dataLength: t.bodyDataLen
-                        }
+            t.canvas.onmouseup = (e) => {
+                draging = false;     
+                t.mouseDown = false;      
+            }
 
+            t.canvas.onmouseleave = function(e){
+                draging = false;                     
+                t.currentX = undefined;
+                t.currentY = undefined;
+                t.currentBodyCell = undefined;
+            }
+        },
 
-                        t.loadMoreData(info)
-                    };
-
-                    distYs.push(distY)                    
-
-
-                    //滚到最下面
-                    if(t.startY < t.downBorder){
-                        t.startY = t.downBorder;
-                    }   
+        dealMouseMoveX(e,dragStartX){
+            const t = this;            
+            if(t.startX > 0){
+                t.startX = 0;
+            }else {
+                let tmpX = t.startX + (e.clientX - dragStartX)
+                if(tmpX <= 0){
+                    t.startX = tmpX                    
+                    dragStartX = e.clientX
                 }
 
-                //针对x
-                if(t.startX > 0){
-                    t.startX = 0;
-                }else {
-                    let tmpX = t.startX + (e.clientX - dragStartX)
-                    if(tmpX <= 0){
-                        t.startX = tmpX                    
-                        dragStartX = e.clientX
-                    }
-
-                    //滚到头,因为这个右边最大宽度是异步获取的
-                    if(t.rightMaxWidth){
-                        //缓存
-                        t.rightBorder = t.rightBorder == 0 ? (-t.rightMaxWidth - t.leftMaxWidth + t.width * t.ratio) : t.rightBorder
-                        if(t.startX < t.rightBorder){
-                            t.startX = t.rightBorder;
-                        }   
-                    }
+                //滚到头,因为这个右边最大宽度是异步获取的
+                if(t.rightMaxWidth){
+                    //缓存
+                    t.rightBorder = t.rightBorder == 0 ? (-t.rightMaxWidth - t.leftMaxWidth + t.width * t.ratio) : t.rightBorder
+                    if(t.startX < t.rightBorder){
+                        t.startX = t.rightBorder;
+                    }   
                 }
             }
 
-            document.onmouseup = (e) => {
-                draging = false;     
-                t.mouseDown = false;      
-                
-                // //对y轴进行鼠标抬起后的延迟
+            return dragStartX
+        },
+
+        dealMouseMoveY(e,dragStartY){
+            const t = this;
+            //针对y
+            if(t.startY > 0) {
+                t.startY = 0;
+            }else{
+                let distY = e.clientY - dragStartY;
+                let tmpY = t.startY + distY;
+                if(tmpY <= 0){
+                    t.startY = tmpY
+                    dragStartY = e.clientY
+
+                    //上下滚动
+                    let info = {
+                        y: t.startY,
+                        downBorder: t.downBorder,
+                        ratio: t.ratio,
+                        bodyPaneHeight: t.bodyPaneHeight,
+                        dataLength: t.bodyDataLen
+                    }
+
+
+                    t.loadMoreData(info)
+                };
+
+                //滚到最下面
+                if(t.startY < t.downBorder){
+                    t.startY = t.downBorder;
+                }   
+            }
+
+            return dragStartY
+        },
+ 
+
+        //============================ event end ==========================
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // //对y轴进行鼠标抬起后的延迟
                 // // console.log(distYs,t.startY)
                 // let yLen = distYs.length;
                 // if(yLen < 10){
@@ -119,66 +165,8 @@ export default {
                 //         }                        
                 //     },1)
                 // }
-            }
 
 
-
-            //鼠标当前坐标
-            let canvasLeft = t.canvas.offsetLeft;
-            let canvasTop = t.canvas.offsetTop;
-            t.canvas.onmousemove = function(e){
- 
-                t.currentX = e.offsetX;
-                t.currentY = e.offsetY;
-
-                t.getCurrentCell(t.currentX,t.currentY)
-
-            }
-            t.canvas.onmouseleave = function(e){
-                t.currentX = undefined;
-                t.currentY = undefined;
-                t.currentBodyCell = undefined;
-            }
-        },
-        
-        //获取当前鼠标附在那个cell上
-        getCurrentCell(x,y){
-            const t = this;            
-            //如果正在拖动／滚动 ，则不计算
-            if(t.mouseDown) return;
-            let col,row;
-            x = x * t.ratio + -t.startX - t.leftMaxWidth;
-            let timer = setTimeout(() => {
-                //第几行
-                row = Math.floor(((-t.startY / t.ratio) + y - t.headerPaneHeight) / t.bodyPaneHeight);
-
-                //第几列
-                if(row < 0) return;
-                t.fixedBodyData[row] && Object.keys(t.fixedBodyData[row]).map((key) => {
-                    let cellPa = t.fixedBodyData[row][key];
-                    let startX = cellPa.startX;
-                    let endX = cellPa.endX;
-                    
-                    if(x >= startX && x < endX){
-                        Object.keys(cellPa.children).map((k) => {
-                            let cell = cellPa.children[k];
-                            let cellStartX = cell.startX;
-                            let cellEndX = cell.endX;
-
-                            if(x >= cellStartX && x < cellEndX){
-                                col = cell.field;
-                            }
-                        })
-                    }
-                })
-
-                t.currentBodyCell = {
-                    row,
-                    col,
-                    event: 'hover'
-                } 
-                clearTimeout(timer)
-            },1)
 
             // let info = {
             //     x,
@@ -197,8 +185,3 @@ export default {
             //         console.log(data,'==')
             //     })
             // },1)
-        }
-
-        //============================ event end ==========================
-    }
-}
