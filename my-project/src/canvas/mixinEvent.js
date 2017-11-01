@@ -122,6 +122,7 @@ export default {
             }
 
 
+            
 
             //鼠标当前坐标
             let canvasLeft = t.canvas.offsetLeft;
