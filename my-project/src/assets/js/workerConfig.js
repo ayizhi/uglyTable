@@ -298,7 +298,7 @@ let workerConfig = [
                     let partLen = 7;
                     let partIndex = parseInt(i / partLen);
                     
-                    tmpData[partIndex] = tmpData[partIndex] == undefined ? {} : tmpData[partIndex];
+                    tmpData[partIndex] = tmpData[partIndex] || {} ;
                     if(i % partLen === 0){
                         tmpData[partIndex].startX = startX;                   
                     }else{
@@ -307,7 +307,7 @@ let workerConfig = [
                         : tmpData[partIndex].endX
                     };
                       
-                    tmpData[partIndex].children = tmpData[partIndex].children == undefined ? {} : tmpData[partIndex].children;                                     
+                    tmpData[partIndex].children = tmpData[partIndex].children || {} ;                                    
                     tmpData[partIndex].children[i] = {
                         rowIndex: startIndex,                        
                         field: key,
@@ -322,6 +322,7 @@ let workerConfig = [
                         paneHeight: bodyPaneHeight * ratio,
                         info: colData                    
                     }
+                    tmpData[partIndex].children.length = tmpData[partIndex].children.length == undefined ? 1 : (tmpData[partIndex].children.length + 1)
                     //reset selfStartX
                     selfStartX = endX;
                 }
